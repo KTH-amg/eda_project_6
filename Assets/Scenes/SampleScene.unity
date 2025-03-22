@@ -440,8 +440,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uC5EC\uB7EC\uBD84 \uC548\uB155\uD558\uC138\uC694."
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: fd69393b390091d4eafd1f3acce5352f, type: 2}
-  m_sharedMaterial: {fileID: 2741740013895948764, guid: fd69393b390091d4eafd1f3acce5352f, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3fe17a2247724254faf60dfa7d564e05, type: 2}
+  m_sharedMaterial: {fileID: 3565633754167244432, guid: 3fe17a2247724254faf60dfa7d564e05, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -471,7 +471,7 @@ MonoBehaviour:
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 1
+  m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
