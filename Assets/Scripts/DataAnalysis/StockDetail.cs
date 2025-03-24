@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 
-public class StockPerData : MonoBehaviour
+public class StockDetail : MonoBehaviour
 {
     public string stock_name;
     public string std_code;
@@ -24,7 +24,7 @@ public class StockPerData : MonoBehaviour
     public long cpt;
     public long num_of_sh;
 
-    public StockPerData(DataRow row)
+    public StockDetail(DataRow row)
     {
         stock_name = row["종목명"].ToString();
         std_code = row["표준코드"].ToString();
