@@ -18,7 +18,7 @@ public class StockInfo : MonoBehaviour
 {
     //private static TextMeshProUGUI price_text;
     static DataTable indv_table;
-    List<StockDetail> stock_data_arr;
+    static List<StockDetail> stock_data_arr;
     string strtDd;
     string endDd;
     float risk;
@@ -154,8 +154,11 @@ public class StockInfo : MonoBehaviour
 
     static void predict_stock_info(int inquiry_period)
     {
-        stock_data_arr = new StockDetail[inquiry_period];
+        stock_data_arr = new List<StockDetail>();
         using (var reader = dbManager.select("stock_price_per_date", "*", $"std_code"))
+        {
+            // 예측일에 따른 예측치 계산
+        };
     }
 }
 */
