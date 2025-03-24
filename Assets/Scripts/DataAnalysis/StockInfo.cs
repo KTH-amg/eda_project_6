@@ -17,14 +17,14 @@ using MySqlConnector;
 public class StockInfo : MonoBehaviour
 {
     //private static TextMeshProUGUI price_text;
-    static DataTableReader stock_reader;
     static DataTable indv_table;
-    //List<StockPerData> stock_data_arr;
+    List<StockDetail> stock_data_arr;
     string strtDd;
     string endDd;
     float risk;
-    //PredictedStock predicted_price;
+    //List<Int> predicted_price;
 
+    /*
     private static async Task OnSceneLoaded()
     {
         if (SceneManager.GetActiveScene().name == "ResultScene")
@@ -36,6 +36,7 @@ public class StockInfo : MonoBehaviour
             }
         }
     }
+    */
     
     static DataTable ConvertCsvToTable(string csvData)
     {
@@ -58,22 +59,23 @@ public class StockInfo : MonoBehaviour
 
     static async Task get_stock_info(string stock_name)
     {
-        string std_code, abbr;
-        stock_reader = dbManager.select("stock", "*");
-
-        while (stock_reader.Read())
+        string std_code = "", abbr = "";
+        using (var stock_reader = dbManager.select("stock", "*"))
         {
-            if (stock_reader["stock_name"].ToString() == stock_name)
+            while (stock_reader.Read())
             {
-                std_code = (string)stock_reader["std_code"];
-                abbr = (string)stock_reader["abbr"];
-                Debug.Log($"std: {std_code}, abbr: {abbr}");
-                break;  // 조건에 맞는 첫 번째 행만 찾으면 종료
+                if (stock_reader["stock_name"].ToString() == stock_name)
+                {
+                    std_code = (string)stock_reader["std_code"];
+                    abbr = (string)stock_reader["abbr"];
+                    Debug.Log($"std: {std_code}, abbr: {abbr}");
+                    break;  // 조건에 맞는 첫 번째 행만 찾으면 종료
+                }
             }
-        }
 
-        // 리소스 해제
-        stock_reader.Close();
+            // 리소스 해제
+            stock_reader.Close();
+        }
 
         // generate 헤더 요청 URL
         string url_price = "http://data.krx.co.kr/comm/fileDn/GenerateOTP/generate.cmd";
@@ -152,18 +154,7 @@ public class StockInfo : MonoBehaviour
 
     static void predict_stock_info(int inquiry_period)
     {
-        /*
-        using (var indv_reader = dbManager.select("stock_price_per_date"))
-        {
-            while (indv_reader.Read())
-            {
-                if (indv_reader["day"].ToString() == inquiry_period)
-                {
-                    Debug.Log($"{std_code}, {inquiry_period}, {indv_reader["종가"]})");
-                    price_text.text = indv_reader["종가"].ToString();
-                }
-            }
-        }
-        */
+        stock_data_arr = new StockDetail[inquiry_period];
+        using (var reader = dbManager.select("stock_price_per_date", "*", $"std_code"))
     }
 }

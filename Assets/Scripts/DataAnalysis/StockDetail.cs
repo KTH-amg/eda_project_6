@@ -14,15 +14,15 @@ public class StockDetail : MonoBehaviour
     public string abbr;
     public string day;
     public int closing_price;
-    public int contrast;
-    public float fluctuation_rate;
-    public int market_price;
-    public int high_price;
-    public int low_price;
-    public double trading_vol;
-    public long trs;
-    public long cpt;
-    public long num_of_sh;
+    public int contrast = 0;
+    public float fluctuation_rate = 0;
+    public int market_price = 0;
+    public int high_price = 0;
+    public int low_price = 0;
+    public double trading_vol = 0;
+    public long trs = 0;
+    public long cpt = 0;
+    public long num_of_sh = 0;
 
     public StockDetail(DataRow row)
     {
