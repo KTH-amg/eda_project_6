@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using TMPro;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,83 +12,29 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using System.Linq;
 using System.Globalization;
-//using MySql.Data;
-//using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 public class StockInfo : MonoBehaviour
 {
-    DataTable csv_table;
-    DataTable indv_table;
+    //private static TextMeshProUGUI price_text;
+    static DataTableReader stock_reader;
+    static DataTable indv_table;
     //List<StockPerData> stock_data_arr;
     string strtDd;
     string endDd;
     float risk;
     //PredictedStock predicted_price;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    static async Task Start()
+    private static async Task OnSceneLoaded()
     {
-        // generate 헤더 요청 URL
-        string url = "http://data.krx.co.kr/comm/fileDn/GenerateOTP/generate.cmd";
-
-        // generate 페이로드의 양식 데이터
-        var data = new Dictionary<string, string>
+        if (SceneManager.GetActiveScene().name == "ResultScene")
         {
-            { "locale", "ko_KR" },
-            { "mktId", "ALL" },
-            { "share", "1" },
-            { "csvxls_isNo", "false" },
-            { "name", "fileDown" },
-            { "url", "dbms/MDC/STAT/standard/MDCSTAT01901" }
-        };
-
-        // 브라우저에서 서버로 보내는 헤더값
-        var headers = new Dictionary<string, string>
-        {
-            { "Referer", "http://data.krx.co.kr/contents/MDC/MDI/mdiLoader/index.cmd?menuId=MDC0201020203" },
-            { "User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" }
-        };
-
-        string csvData;
-        using (var client = new HttpClient())
-        {
-            foreach (var header in headers)
+            if (price_text != null)
             {
-                client.DefaultRequestHeaders.Add(header.Key, header.Value);
-            }
-
-            // generate 부분의 헤더에서 Referer과 User-Agent를 따올 수 있음 User-Agent는 모두 동일
-            // KRX의 다른 정보를 따올 때는 Referer만 바꿔주기
-            // download payload(요청데이터)와 동일해야함
-            var content = new FormUrlEncodedContent(data);
-            var response = await client.PostAsync(url, content);
-            var otp = await response.Content.ReadAsStringAsync();
-
-            // download의 헤더 요청 URL
-            string downUrl = "http://data.krx.co.kr/comm/fileDn/download_csv/download.cmd";
-
-            // 서버로부터 데이터 요청 후 읽어들이기
-            var downloadData = new Dictionary<string, string>
-            {
-                { "code", otp }
-            };
-            var downloadContent = new FormUrlEncodedContent(downloadData);
-            var downSectorResponse = await client.PostAsync(downUrl, downloadContent);
-            var stream = await downSectorResponse.Content.ReadAsStreamAsync();
-
-            using (var reader = new StreamReader(stream, Encoding.GetEncoding("EUC-KR")))
-            {
-                csvData = reader.ReadToEnd();
+                await get_stock_info("삼성전자");
+                //predict_stock_info("2024-08-20");
             }
         }
-        
-        csv_table = ConvertCsvToTable(csvData);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
     
     static DataTable ConvertCsvToTable(string csvData)
@@ -110,37 +58,38 @@ public class StockInfo : MonoBehaviour
 
     static async Task get_stock_info(string stock_name)
     {
+        string std_code, abbr;
+        stock_reader = dbManager.select("stock", "*");
+
+        while (stock_reader.Read())
+        {
+            if (stock_reader["stock_name"].ToString() == stock_name)
+            {
+                std_code = (string)stock_reader["std_code"];
+                abbr = (string)stock_reader["abbr"];
+                Debug.Log($"std: {std_code}, abbr: {abbr}");
+                break;  // 조건에 맞는 첫 번째 행만 찾으면 종료
+            }
+        }
+
+        // 리소스 해제
+        stock_reader.Close();
+
         // generate 헤더 요청 URL
         string url_price = "http://data.krx.co.kr/comm/fileDn/GenerateOTP/generate.cmd";
-
-        string std, abbr, day;
-        var filteredRows = sectors.AsEnumerable()
-            .Where(row => row["한글 종목약명"].ToString() == stock_name)
-            .Select(row => new
-            {
-                표준코드 = row["표준코드"],
-                단축코드 = row["단축코드"],
-                상장일 = row["상장일"]
-            });
-
-        foreach (var item in filteredRows)
-        {
-            std = item.표준코드.ToString();
-            abbr = item.단축코드.ToString();
-            day = item.상장일.ToString();
-        }
+        string day = DateTime.Now.ToString("yyyy/MM/dd");
 
         // generate 페이로드의 양식 데이터
         var data_price = new Dictionary<string, string>
         {
             { "locale", "ko_KR" },
-            { "tboxisuCd_finder_stkisu0_1", $"{std}/{stock_name}" },
-            { "isuCd", std },
+            { "tboxisuCd_finder_stkisu0_1", $"{abbr}/{stock_name}" },
+            { "isuCd", std_code },
             { "isuCd2", "KR7005930003" },
-            { "codeNmisuCd_finder_stkisu0_1", name },
+            { "codeNmisuCd_finder_stkisu0_1", stock_name },
             { "param1isuCd_finder_stkisu0_1", "ALL"},
-            { "strtDd", strtDd },
-            { "endDd", endDd },
+            { "strtDd", day },
+            { "endDd", day },
             { "adjStkPrc_check", "Y"},
             { "adjStkPrc", "2" },
             { "share", "1" },
@@ -190,24 +139,31 @@ public class StockInfo : MonoBehaviour
             }
         }
 
-        indv_table = ConvertCsvToTable(indv_data);
-        DataColumn newCol = new DataColumn("종목명", typeof(string));
-        indv_table.Columns.InsertAt(newCol, 0);
-
-        foreach (DataRow row in indv_table.Rows)
+        DataTable indv_table = ConvertCsvToTable(indv_data);
+        string cur_price; //현재가
+        using(var indv_reader = indv_table.CreateDataReader())
         {
-            row["종목명"] = stock_name;
-        }
-
-        stock_data_arr = new List<StockPerData>();
-        foreach (DataRow row in indv_data)
-        {
-            stock_data_arr.Add(new StockPreData(row));
-        }
+            while (indv_reader.Read())
+            {
+                cur_price = indv_reader["종가"].ToString();
+            }
+        };
     }
 
-    static async Task predict_stock_info(int inquiry_period)
+    static void predict_stock_info(int inquiry_period)
     {
-
+        /*
+        using (var indv_reader = dbManager.select("stock_price_per_date"))
+        {
+            while (indv_reader.Read())
+            {
+                if (indv_reader["day"].ToString() == inquiry_period)
+                {
+                    Debug.Log($"{std_code}, {inquiry_period}, {indv_reader["종가"]})");
+                    price_text.text = indv_reader["종가"].ToString();
+                }
+            }
+        }
+        */
     }
 }
