@@ -1,4 +1,4 @@
-using UnityEngine;
+/*using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
 using System;
@@ -37,7 +37,7 @@ public class StockInfo : MonoBehaviour
         }
     }
     */
-    
+    /*
     static DataTable ConvertCsvToTable(string csvData)
     {
         DataTable dataTable = new DataTable();
@@ -158,3 +158,4 @@ public class StockInfo : MonoBehaviour
         using (var reader = dbManager.select("stock_price_per_date", "*", $"std_code"))
     }
 }
+*/

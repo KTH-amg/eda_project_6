@@ -12,17 +12,25 @@ public class ShineEffect : MonoBehaviour
     private RectBar parentBar;
 
     private void Start()
-    {
-        rt = GetComponent<RectTransform>();
-        shineImage = GetComponent<Image>();
-        parentBar = GetComponentInParent<RectBar>();
-        
-        rt.anchoredPosition = new Vector2(0, 6f);
-        
-        rt.anchorMin = new Vector2(0, 0.5f);
-        rt.anchorMax = new Vector2(0, 0.5f);
-        rt.pivot = new Vector2(0.5f, 0.5f);
-    }
+{
+    rt = GetComponent<RectTransform>();
+    shineImage = GetComponent<Image>();
+    parentBar = GetComponentInParent<RectBar>();
+    
+    rt.anchoredPosition = new Vector2(0, 6f);
+    
+    rt.anchorMin = new Vector2(0, 0.5f);
+    rt.anchorMax = new Vector2(0, 0.5f);
+    rt.pivot = new Vector2(0.5f, 0.5f);
+
+    // 처음에는 투명하게 시작
+    Color startColor = shineImage.color;
+    startColor.a = 0;
+    shineImage.color = startColor;
+    
+    // 1초 후에 페이드 인
+    Invoke("ShowShineEffect", 1f);
+}
 
     void Update()
     {
@@ -48,4 +56,11 @@ public class ShineEffect : MonoBehaviour
         
         rt.anchoredPosition = new Vector2(currentX, 6f);
     }
+    private void ShowShineEffect()
+{
+    Color finalColor = shineImage.color;
+    finalColor.a = 0.03f;
+    shineImage.color = finalColor;
+}
+    
 }
