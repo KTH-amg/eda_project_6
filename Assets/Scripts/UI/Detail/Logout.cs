@@ -18,7 +18,13 @@ public class Logout : MonoBehaviour
 
     public void OnClickLogout()
     {
+<<<<<<< HEAD
         User.Instance.delUser();
+=======
+        // User 인스턴스 초기화
+        User.Instance.delUser();  // static instance를 null로 설정하여 다음 로그인에서 새로 생성되게 함
+        
+>>>>>>> 68828be0358a9ebd31626a7b476439710d94b1cb
         // Login 씬으로 전환
         SceneManager.LoadScene("Login");
     }
