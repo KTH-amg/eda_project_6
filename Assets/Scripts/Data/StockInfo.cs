@@ -1,6 +1,3 @@
-/*using UnityEngine;
-using UnityEngine.SceneManagement;
-using TMPro;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,32 +9,15 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using System.Linq;
 using System.Globalization;
-using MySqlConnector;
 
-public class StockInfo : MonoBehaviour
+public class StockInfo
 {
-    //private static TextMeshProUGUI price_text;
-    static DataTable indv_table;
-    static List<StockDetail> stock_data_arr;
-    string strtDd;
-    string endDd;
-    float risk;
-    //List<Int> predicted_price;
+    private static List<StockDetail> stock_data_arr;
+    private static string strtDd;
+    private static string endDd;
+    private float risk;
+    private List<int> predicted_price;
 
-    /*
-    private static async Task OnSceneLoaded()
-    {
-        if (SceneManager.GetActiveScene().name == "ResultScene")
-        {
-            if (price_text != null)
-            {
-                await get_stock_info("삼성전자");
-                //predict_stock_info("2024-08-20");
-            }
-        }
-    }
-    */
-    /*
     static DataTable ConvertCsvToTable(string csvData)
     {
         DataTable dataTable = new DataTable();
@@ -56,9 +36,10 @@ public class StockInfo : MonoBehaviour
             return dataTable;
         }
     }
-
+    
     static async Task get_stock_info(string stock_name)
     {
+        // 종목 표준코드, 약식코드 검색
         string std_code = "", abbr = "";
         using (var stock_reader = dbManager.select("stock", "*"))
         {
@@ -68,7 +49,6 @@ public class StockInfo : MonoBehaviour
                 {
                     std_code = (string)stock_reader["std_code"];
                     abbr = (string)stock_reader["abbr"];
-                    Debug.Log($"std: {std_code}, abbr: {abbr}");
                     break;  // 조건에 맞는 첫 번째 행만 찾으면 종료
                 }
             }
@@ -77,6 +57,23 @@ public class StockInfo : MonoBehaviour
             stock_reader.Close();
         }
 
+        // 종목 주가 정보 수집
+        using (var price_reader = dbManager.select(
+            "stock_price_per_date p", "*", $"s.stock_name={stock_name} AND (p.date BETWEEN {strtDd} AND {endDd})", "stock s", "p.std_code=s.std_code"))
+        {
+            while (price_reader.Read())
+            {
+                DateTime date = Convert.ToDateTime(price_reader["day"]);
+                stock_data_arr.Add(new StockDetail(
+                    stock_name, std_code, 
+                    price_reader["day"].ToString(), 
+                    Convert.ToInt32(price_reader["closing_price"])));
+                    break;  // 조건에 맞는 첫 번째 행만 찾으면 종료
+            }
+            price_reader.Close();
+        }
+
+        // 종목의 현재가 수집
         // generate 헤더 요청 URL
         string url_price = "http://data.krx.co.kr/comm/fileDn/GenerateOTP/generate.cmd";
         string day = DateTime.Now.ToString("yyyy/MM/dd");
@@ -142,16 +139,25 @@ public class StockInfo : MonoBehaviour
         }
 
         DataTable indv_table = ConvertCsvToTable(indv_data);
-        string cur_price; //현재가
+        int cur_price; //현재가
         using(var indv_reader = indv_table.CreateDataReader())
         {
             while (indv_reader.Read())
             {
-                cur_price = indv_reader["종가"].ToString();
+                cur_price = Convert.ToInt32(indv_reader["종가"]);
+                stock_data_arr.Add(new StockDetail(
+                    stock_name, std_code, day, cur_price, abbr, 
+                    Convert.ToInt32(indv_reader["대비"]), Convert.ToSingle(indv_reader["등락률"]),
+                    Convert.ToInt32(indv_reader["시가"]), Convert.ToInt32(indv_reader["고가"]),
+                    Convert.ToInt32(indv_reader["저가"]), Convert.ToDouble(indv_reader["거래량"]),
+                    Convert.ToInt64(indv_reader["거래대금"]), Convert.ToInt64(indv_reader["시가총액"]),
+                    Convert.ToInt64(indv_reader["상장주식수"])));
             }
-        };
-    }
 
+            indv_reader.Close();
+        }
+    }
+    /*
     static void predict_stock_info(int inquiry_period)
     {
         stock_data_arr = new List<StockDetail>();
@@ -160,5 +166,5 @@ public class StockInfo : MonoBehaviour
             // 예측일에 따른 예측치 계산
         };
     }
+    */
 }
-*/

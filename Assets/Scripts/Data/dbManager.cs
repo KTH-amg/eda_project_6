@@ -24,7 +24,7 @@ public class dbManager : MonoBehaviour
         builder.AppendFormat("Port={0};", "3306"); // DB의 포트 번호
         builder.AppendFormat("Database={0};", "joseon_ameba"); // 데이터베이스 이름
         builder.AppendFormat("Uid={0};", "taeho"); // 사용자 이름
-        builder.AppendFormat("Pwd={0}", "kim4582345"); // 사용자의 비밀번호
+        builder.AppendFormat("Pwd={0}", ""); // 사용자의 비밀번호
 
         sql_connection = builder.ToString();
     }
@@ -63,7 +63,7 @@ public class dbManager : MonoBehaviour
 
         try
         {
-            var cmd = $"INSERT INTO user (username, password) VALUES ({user_id}, {user_pw})";
+            var cmd = $"INSERT INTO user (username, password) VALUES ({user_id}, {user_pw});";
             MySqlCommand db_cmd = new MySqlCommand(cmd, connection.Value); // 명령어를 커맨드에 입력
             db_cmd.ExecuteNonQuery(); // 명령어를 SQL에 보냄
 
@@ -80,31 +80,32 @@ public class dbManager : MonoBehaviour
         }
     }
 
-    public static DataTableReader select(string table_name, string data, string cond = null)
+    public static DataTableReader select(string table_name, string data, string cond = null, string join = null, string join_cond = null)
     {
-        Debug.Log($"[SELECT]: {table_name}");
+        Debug.Log($"{table_name}");
         db_connect(); // 접속
 
         try
         {
-            if (cond == null)
+            var cmd = "";
+            if ((cond == null) && (join == null) && (join_cond == null))
             {
-                var cmd = $"SELECT {data} FROM {table_name}";
-                MySqlDataAdapter adapter = new MySqlDataAdapter(cmd, connection.Value);
-                DataTable table = new DataTable(); // 테이블 생성
-                adapter.Fill(table); // 데이터 테이블 채우기
-
-                return table.CreateDataReader(); // 성공적으로 select를 했다면, 데이터 리더를 생성
+                cmd += $"SELECT {data} FROM {table_name};";
+            }
+            else if ((join == null) && (join_cond == null))
+            {
+                cmd += $"SELECT {data} FROM {table_name} WHERE {cond};";
             }
             else
             {
-                var command = $"SELECT {data} FROM {table_name} WHERE {cond}";
-                MySqlDataAdapter adapter = new MySqlDataAdapter(command, connection.Value);
-                DataTable table = new DataTable(); // 테이블 생성
-                adapter.Fill(table); // 데이터 테이블 채우기
-
-                return table.CreateDataReader(); // 성공적으로 select를 했다면, 데이터 리더를 생성
+                cmd += $"SELECT {data} FROM {table_name} JOIN {join} ON {join_cond} WHERE {cond};";
             }
+
+            MySqlDataAdapter adapter = new MySqlDataAdapter(cmd, connection.Value);
+            DataTable table = new DataTable(); // 테이블 생성
+            adapter.Fill(table); // 데이터 테이블 채우기
+
+            return table.CreateDataReader(); // 성공적으로 select를 했다면, 데이터 리더를 생성
         }
         catch (MySqlException e) // SQL 오류 발생
         {
