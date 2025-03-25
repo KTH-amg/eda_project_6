@@ -119,27 +119,30 @@ public class LoginManager : MonoBehaviour
         if (isIdValid && isPwValid)
         {
             Debug.Log("로그인 시도: ID=" + id);
-            using (var log_reader = dbManager.select("user", "*", $"username={id}"))
+            using (var log_reader = dbManager.select("user", "*", $"user_id='{id}'"))
             {
-                if (log_reader == null)
+                if (log_reader == null || !log_reader.HasRows)  // 데이터가 없는 경우 체크
                 {
-                    Debug.Log("로그인 실패: ID가 존재하지 않읍니다.");
+                    Debug.Log("로그인 실패: ID가 존재하지 않습니다.");
                     // 화면에 오류 메시지 출력
                 }
                 else
                 {
-                    if (Convert.ToString(log_reader["user_pw"]) == password)
+                    while (log_reader.Read())
                     {
-                        Debug.Log("로그인 성공!");
-                        User.Instance.setId(id);
-                        User.Instance.setPw(password);
+                        if (Convert.ToString(log_reader["user_pw"]) == password)
+                        {
+                            Debug.Log("로그인 성공!");
+                            User.Instance.setId(id);
+                            User.Instance.setPw(password);
 
-                        SceneManager.LoadScene("UserDetail");
-                    }
-                    else
-                    {
-                        Debug.Log("로그인 실패: 비밀번호가 틀립니다");
-                        // 화면에 오류 메시지 출력
+                            SceneManager.LoadScene("UserDetail");
+                        }
+                        else
+                        {
+                            Debug.Log("로그인 실패: 비밀번호가 틀립니다");
+                            // 화면에 오류 메시지 출력
+                        }
                     }
                 }
             }
