@@ -220,39 +220,21 @@ public class SignupManager : MonoBehaviour
         bool isPwValid = Regex.IsMatch(password, pwPattern) && password.Length >= 8 && password.Length <= 12;
         bool isPwConfirmValid = password == passwordConfirm;
         
-<<<<<<< HEAD
-        if (isNameValid && isIdValid && isPwValid && isPwConfirmValid)
-        {
-            Debug.Log("회원가입 성공: ID=" + id);
-            
-            // 회원가입 성공 후 로그인 화면으로 이동하거나 자동 로그인 처리
-            using (var user_reader = dbManager.select("user", "count(*)", $"username = '{id}'"))
-            {
-                if (user_reader != null && user_reader.Read()) // 데이터가 있는지 확인
-=======
         if (isIdValid && isPwValid && isPwConfirmValid)
         {   
             // 회원가입 성공 후 로그인 화면으로 이동하거나 자동 로그인 처리
             using (var user_reader = dbManager.select("user", "count(*)", $"user_id='{id}'"))
             {
                 while (user_reader.Read())
->>>>>>> 68828be0358a9ebd31626a7b476439710d94b1cb
                 {
                     int count = Convert.ToInt32(user_reader["count(*)"]);
                     if (count == 0)
                     {
-<<<<<<< HEAD
                         Debug.Log("회원가입 성공!");
                         dbManager.insert(id, password, name);
                         User.Instance.setId(id);
                         User.Instance.setPw(password);
                         User.Instance.setName(name);
-=======
-                        Debug.Log("회원가입 성공: ID=" + id);
-                        dbManager.insert(id, password);
-                        User.Instance.setId(id);
-                        User.Instance.setPw(password);
->>>>>>> 68828be0358a9ebd31626a7b476439710d94b1cb
 
                         SceneManager.LoadScene("UserDetail"); // 로그인 씬으로 이동
                     }
@@ -261,13 +243,6 @@ public class SignupManager : MonoBehaviour
                         Debug.Log("회원가입 실패: 중복된 ID가 있읍니다.");
                         // '중복된 ID가 있습니다' 오류 메시지 출력
                     }
-<<<<<<< HEAD
-                }
-                else
-                {
-                    Debug.LogError("데이터를 읽을 수 없습니다.");
-=======
->>>>>>> 68828be0358a9ebd31626a7b476439710d94b1cb
                 }
             }
         }

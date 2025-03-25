@@ -63,12 +63,7 @@ public class dbManager : MonoBehaviour
 
         try
         {
-<<<<<<< HEAD
             var cmd = $"INSERT INTO user (username, password, name) VALUES ({user_id}, {user_pw}, {user_name});";
-=======
-            var cmd = $"INSERT INTO user (user_id, user_pw) VALUES ('{user_id}', '{user_pw}');";
-            Debug.Log(cmd);
->>>>>>> 68828be0358a9ebd31626a7b476439710d94b1cb
             MySqlCommand db_cmd = new MySqlCommand(cmd, connection.Value); // 명령어를 커맨드에 입력
             db_cmd.ExecuteNonQuery(); // 명령어를 SQL에 보냄
 
