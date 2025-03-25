@@ -59,7 +59,6 @@ public class User
 
     public void delUser()
     {
-        user_id = null;
-        user_pw = null;
+        _instance = null;
     }
 }
