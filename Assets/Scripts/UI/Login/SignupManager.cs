@@ -225,23 +225,39 @@ public class SignupManager : MonoBehaviour
             // 회원가입 성공 후 로그인 화면으로 이동하거나 자동 로그인 처리
             using (var user_reader = dbManager.select("user", "count(*)", $"user_id='{id}'"))
             {
-                while (user_reader.Read())
+                if (user_reader == null || !user_reader.HasRows)  // 데이터가 없는 경우 체크
                 {
-                    int count = Convert.ToInt32(user_reader["count(*)"]);
-                    if (count == 0)
+                    Debug.Log("회원가입 실패: DB와의 통신 실패");
+                    // 화면에 오류 메시지 출력
+                }
+                else
+                {
+                    while (user_reader.Read())
                     {
-                        Debug.Log("회원가입 성공!");
-                        dbManager.insert(id, password, name);
-                        User.Instance.setId(id);
-                        User.Instance.setPw(password);
-                        User.Instance.setName(name);
+                        int count = Convert.ToInt32(user_reader["count(*)"]);
+                        if (count == 0)
+                        {
+                            int error = Convert.ToInt32(dbManager.insert(id, name, password));
+                            if (error == 0)
+                            {
+                                User.Instance.setId(id);
+                                User.Instance.setPw(password);
+                                User.Instance.setName(name);
 
-                        SceneManager.LoadScene("UserDetail"); // 로그인 씬으로 이동
-                    }
-                    else
-                    {
-                        Debug.Log("회원가입 실패: 중복된 ID가 있읍니다.");
-                        // '중복된 ID가 있습니다' 오류 메시지 출력
+                                Debug.Log("회원가입 성공!");
+                                SceneManager.LoadScene("UserDetail"); // 로그인 씬으로 이동
+                            }
+                            else
+                            {
+                                Debug.Log("회원가입 실패: DB 오류");
+                                // 화면에 오류 메시지 출력
+                            }
+                        }
+                        else
+                        {
+                            Debug.Log("회원가입 실패: 중복된 ID가 있읍니다.");
+                            // '중복된 ID가 있습니다' 오류 메시지 출력
+                        }
                     }
                 }
             }
