@@ -213,6 +213,7 @@ public class SignupManager : MonoBehaviour
                 int count = Convert.ToInt32(user_reader["count(*)"]);
                 if (count == 0)
                 {
+                    Debug.Log("회원가입 성공!");
                     dbManager.insert(id, password);
                     User.Instance.setId(id);
                     User.Instance.setPw(password);
@@ -221,6 +222,7 @@ public class SignupManager : MonoBehaviour
                 }
                 else
                 {
+                    Debug.Log("회원가입 실패: 중복된 ID가 있읍니다.");
                     // '중복된 ID가 있습니다' 오류 메시지 출력
                 }
             }

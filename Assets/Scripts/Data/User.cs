@@ -7,19 +7,18 @@ public class User
     private string user_pw;
     private List<string> holding_stock;
 
-    public static User instance;
-
     private User() {}
+    public static User _instance;
 
     public static User Instance
     {
         get
         {
-            if (instance == null)
+            if (_instance == null)
             {
-                instance = new User();
+                _instance = new User();
             }
-            return instance;
+            return _instance;
         }
     }
 
@@ -56,5 +55,11 @@ public class User
     public List<string> getStock()
     {
         return holding_stock;
+    }
+
+    public void delUser()
+    {
+        user_id = null;
+        user_pw = null;
     }
 }
