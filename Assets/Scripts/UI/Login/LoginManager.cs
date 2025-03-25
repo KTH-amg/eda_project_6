@@ -3,6 +3,7 @@ using TMPro;
 using System.Text.RegularExpressions;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using System;
 
 public class LoginManager : MonoBehaviour
 {
@@ -118,11 +119,30 @@ public class LoginManager : MonoBehaviour
         if (isIdValid && isPwValid)
         {
             Debug.Log("로그인 시도: ID=" + id);
-            /*
-            로그인 로직은 여기에 작성할 것.
-            DB에서 아이디와 비밀번호를 확인하고, 맞으면 로그인 성공, 틀리면 로그인 실패.
-            */
-            SceneManager.LoadScene("UserDetail");
+            using (var log_reader = dbManager.select("user", "*", $"username={id}"))
+            {
+                if (log_reader == null)
+                {
+                    Debug.Log("로그인 실패: ID가 존재하지 않읍니다.");
+                    // 화면에 오류 메시지 출력
+                }
+                else
+                {
+                    if (Convert.ToString(log_reader["user_pw"]) == password)
+                    {
+                        Debug.Log("로그인 성공!");
+                        User.Instance.setId(id);
+                        User.Instance.setPw(password);
+
+                        SceneManager.LoadScene("UserDetail");
+                    }
+                    else
+                    {
+                        Debug.Log("로그인 실패: 비밀번호가 틀립니다");
+                        // 화면에 오류 메시지 출력
+                    }
+                }
+            }
         }
         else
         {
