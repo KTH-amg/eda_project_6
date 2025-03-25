@@ -134,7 +134,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      azureicon_0: -99746147491208296
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

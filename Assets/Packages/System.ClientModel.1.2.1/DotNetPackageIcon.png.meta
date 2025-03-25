@@ -134,7 +134,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      DotNetPackageIcon_0: -612141759775583841
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
