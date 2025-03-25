@@ -7,37 +7,53 @@ public class User
     private string user_pw;
     private List<string> holding_stock;
 
-    void setId(string id)
+    public static User instance;
+
+    private User() {}
+
+    public static User Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = new User();
+            }
+            return instance;
+        }
+    }
+
+    public void setId(string id)
     {
         user_id = id;
     }
 
-    void setPw(string pw)
+    public void setPw(string pw)
     {
         user_pw = pw;
     }
 
-    void setStock(string stock)
+    public void setStock(string stock)
     {
         holding_stock.Add(stock);
     }
 
-    void delStock(string stock)
+    public void delStock(string stock)
     {
         holding_stock.Remove(stock);
     }
 
-    string getId()
+    public string getId()
     {
         return user_id;
     }
 
-    string getPw()
+    public string getPw()
     {
         return user_pw;
     }
 
-    List<string> getStock()
+    public List<string> getStock()
     {
         return holding_stock;
     }
