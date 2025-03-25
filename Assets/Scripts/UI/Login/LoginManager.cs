@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using UnityEngine.SceneManagement;
 using System.Collections;
 using System;
+using user;
 
 public class LoginManager : MonoBehaviour
 {
@@ -212,10 +213,6 @@ public class LoginManager : MonoBehaviour
                 idInputTMP.Select();
                 idInputTMP.ActivateInputField();
             }
-        }
-        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
-        {
-            OnLoginButtonClick();
         }
     }
 }

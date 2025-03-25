@@ -1,10 +1,13 @@
-using System;
-using System.Collections.Generic;
+namespace user
+{
+    using System;
+    using System.Collections.Generic;
 
-public class User
+    public class User
 {
     private string user_id;
     private string user_pw;
+    private string user_name;
     private List<string> holding_stock;
 
     private User() {}
@@ -30,6 +33,11 @@ public class User
     public void setPw(string pw)
     {
         user_pw = pw;
+    }
+
+    public void setName(string name)
+    {
+        user_name = name;
     }
 
     public void setStock(string stock)
@@ -61,5 +69,6 @@ public class User
     {
         user_id = null;
         user_pw = null;
+    }
     }
 }

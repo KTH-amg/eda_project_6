@@ -5,18 +5,22 @@ using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using System.Collections;
 using System;
+using user;
 
 public class SignupManager : MonoBehaviour
 {
+    [SerializeField] private TMP_InputField nameInputTMP;
     [SerializeField] private TMP_InputField idInputTMP;
     [SerializeField] private TMP_InputField pwInputTMP;
     [SerializeField] private TMP_InputField pwConfirmInputTMP;
     
+    [SerializeField] private GameObject nameErrorMessage;
     [SerializeField] private GameObject idErrorMessage;
     [SerializeField] private GameObject pwErrorMessage;
     [SerializeField] private GameObject pwConfirmErrorMessage;
     
     // 정규식 패턴
+    private readonly string namePattern = @"^[가-힣]+$";
     private readonly string idPattern = @"^[a-z]+[0-9]+$"; // 영어 소문자 먼저, 그 다음 숫자
     private readonly string pwPattern = @"^(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':""\\|,.<>\/?]).*$"; // 영어 소문자, 숫자, 기호 조합
     
@@ -27,6 +31,7 @@ public class SignupManager : MonoBehaviour
     private void Start()
     {
         // 에러 메시지 초기 상태 설정
+        if (nameErrorMessage) nameErrorMessage.SetActive(false);
         if (idErrorMessage) idErrorMessage.SetActive(false);
         if (pwErrorMessage) pwErrorMessage.SetActive(false);
         if (pwConfirmErrorMessage) pwConfirmErrorMessage.SetActive(false);
@@ -44,11 +49,13 @@ public class SignupManager : MonoBehaviour
         }
         
         // 입력 필드에 이벤트 리스너 추가
+        nameInputTMP.onValueChanged.AddListener(ValidateName);
         idInputTMP.onValueChanged.AddListener(ValidateID);
         pwInputTMP.onValueChanged.AddListener(ValidatePW);
         pwConfirmInputTMP.onValueChanged.AddListener(ValidatePWConfirm);
         
         // 최대 길이 설정
+        nameInputTMP.characterLimit = 10;
         idInputTMP.characterLimit = 10;
         pwInputTMP.characterLimit = 12;
         pwConfirmInputTMP.characterLimit = 12;
@@ -65,24 +72,24 @@ public class SignupManager : MonoBehaviour
         {
             HandleTabNavigation();
         }
-        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
-        {
-            OnSignupButtonClick();
-        }
     }
     
     private void HandleTabNavigation()
     {
         if (idInputTMP.isFocused)
         {
-            // ID 필드에서 Tab을 누르면 비밀번호 필드로 이동
             idInputTMP.DeactivateInputField();
+            nameInputTMP.Select();
+            nameInputTMP.ActivateInputField();
+        }
+        else if (nameInputTMP.isFocused)
+        {
+            nameInputTMP.DeactivateInputField();
             pwInputTMP.Select();
             pwInputTMP.ActivateInputField();
         }
         else if (pwInputTMP.isFocused)
         {
-            // 비밀번호 필드에서 Tab을 누르면 비밀번호 확인 필드로 이동
             pwInputTMP.DeactivateInputField();
             pwConfirmInputTMP.Select();
             pwConfirmInputTMP.ActivateInputField();
@@ -91,19 +98,36 @@ public class SignupManager : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.LeftShift))
             {
-                // 비밀번호 확인 필드에서 Shift+Tab을 누르면 비밀번호 필드로 이동
                 pwConfirmInputTMP.DeactivateInputField();
                 pwInputTMP.Select();
                 pwInputTMP.ActivateInputField();
             }
             else
             {
-                // 비밀번호 확인 필드에서 Tab을 누르면 ID 필드로 이동 (순환)
                 pwConfirmInputTMP.DeactivateInputField();
                 idInputTMP.Select();
                 idInputTMP.ActivateInputField();
             }
         }
+    }
+    
+    private void ValidateName(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+        {
+            if (nameErrorMessage) nameErrorMessage.SetActive(false);
+            return;
+        }
+        
+        bool isValid = Regex.IsMatch(input, namePattern);
+        bool hasCorrectLength = input.Length >= 2 && input.Length <= 10;
+        
+        if (nameErrorMessage)
+        {
+            nameErrorMessage.SetActive(!isValid || !hasCorrectLength);
+        }
+        
+        nameInputTMP.textComponent.color = (isValid && hasCorrectLength) ? validColor : errorColor;
     }
     
     private void ValidateID(string input)
@@ -186,44 +210,45 @@ public class SignupManager : MonoBehaviour
     
     public void OnSignupButtonClick()
     {
+        string name = nameInputTMP.text;
         string id = idInputTMP.text;
         string password = pwInputTMP.text;
         string passwordConfirm = pwConfirmInputTMP.text;
         
-        // ID 유효성 검사 (길이와 패턴 분리)
-        bool isIdLengthValid = id.Length >= 6 && id.Length <= 10;
-        bool isIdPatternValid = Regex.IsMatch(id, idPattern);
-        bool isIdValid = isIdLengthValid && isIdPatternValid;
-        
-        // 비밀번호 유효성 검사 (길이와 패턴 분리)
-        bool isPwLengthValid = password.Length >= 8 && password.Length <= 12;
-        bool isPwPatternValid = Regex.IsMatch(password, pwPattern);
-        bool isPwValid = isPwLengthValid && isPwPatternValid;
-        
-        // 비밀번호 확인 유효성 검사
+        bool isNameValid = Regex.IsMatch(name, namePattern) && name.Length >= 2 && name.Length <= 10;
+        bool isIdValid = Regex.IsMatch(id, idPattern) && id.Length >= 6 && id.Length <= 10;
+        bool isPwValid = Regex.IsMatch(password, pwPattern) && password.Length >= 8 && password.Length <= 12;
         bool isPwConfirmValid = password == passwordConfirm;
         
-        if (isIdValid && isPwValid && isPwConfirmValid)
+        if (isNameValid && isIdValid && isPwValid && isPwConfirmValid)
         {
             Debug.Log("회원가입 성공: ID=" + id);
             
             // 회원가입 성공 후 로그인 화면으로 이동하거나 자동 로그인 처리
-            using (var user_reader = dbManager.select("user", "count(*)", $"username={id}"))
+            using (var user_reader = dbManager.select("user", "count(*)", $"username = '{id}'"))
             {
-                int count = Convert.ToInt32(user_reader["count(*)"]);
-                if (count == 0)
+                if (user_reader != null && user_reader.Read()) // 데이터가 있는지 확인
                 {
-                    Debug.Log("회원가입 성공!");
-                    dbManager.insert(id, password);
-                    User.Instance.setId(id);
-                    User.Instance.setPw(password);
+                    int count = Convert.ToInt32(user_reader["count(*)"]);
+                    if (count == 0)
+                    {
+                        Debug.Log("회원가입 성공!");
+                        dbManager.insert(id, password, name);
+                        User.Instance.setId(id);
+                        User.Instance.setPw(password);
+                        User.Instance.setName(name);
 
-                    SceneManager.LoadScene("UserDetail"); // 로그인 씬으로 이동
+                        SceneManager.LoadScene("UserDetail"); // 로그인 씬으로 이동
+                    }
+                    else
+                    {
+                        Debug.Log("회원가입 실패: 중복된 ID가 있읍니다.");
+                        // '중복된 ID가 있습니다' 오류 메시지 출력
+                    }
                 }
                 else
                 {
-                    Debug.Log("회원가입 실패: 중복된 ID가 있읍니다.");
-                    // '중복된 ID가 있습니다' 오류 메시지 출력
+                    Debug.LogError("데이터를 읽을 수 없습니다.");
                 }
             }
         }
@@ -250,6 +275,13 @@ public class SignupManager : MonoBehaviour
             {
                 pwConfirmErrorMessage.SetActive(true);
                 StartCoroutine(FlashErrorMessage(pwConfirmErrorMessage));
+            }
+            
+            // 이름 에러 메시지 처리
+            if (nameErrorMessage && !string.IsNullOrEmpty(name) && !isNameValid)
+            {
+                nameErrorMessage.SetActive(true);
+                StartCoroutine(FlashErrorMessage(nameErrorMessage));
             }
         }
     }
@@ -279,6 +311,7 @@ public class SignupManager : MonoBehaviour
     private void OnDestroy()
     {
         // 이벤트 리스너 제거
+        nameInputTMP.onValueChanged.RemoveListener(ValidateName);
         idInputTMP.onValueChanged.RemoveListener(ValidateID);
         pwInputTMP.onValueChanged.RemoveListener(ValidatePW);
         pwConfirmInputTMP.onValueChanged.RemoveListener(ValidatePWConfirm);
