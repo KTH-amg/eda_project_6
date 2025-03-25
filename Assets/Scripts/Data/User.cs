@@ -59,6 +59,10 @@ namespace user
     {
         return user_pw;
     }
+    public string getName()
+    {
+        return user_name;
+    }
 
     public List<string> getStock()
     {

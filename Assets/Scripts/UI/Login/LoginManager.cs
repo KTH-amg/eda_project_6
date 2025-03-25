@@ -136,6 +136,7 @@ public class LoginManager : MonoBehaviour
                             Debug.Log("로그인 성공!");
                             User.Instance.setId(id);
                             User.Instance.setPw(password);
+                            User.Instance.setName(Convert.ToString(log_reader["username"]));
 
                             SceneManager.LoadScene("UserDetail");
                         }
