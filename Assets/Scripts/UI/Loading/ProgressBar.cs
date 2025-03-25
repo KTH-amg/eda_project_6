@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 
-public class RectBar : MonoBehaviour
+public class ProgressBar : MonoBehaviour
 {
     public Action OnComplete;
     private Image progressBar;
@@ -24,7 +24,7 @@ public class RectBar : MonoBehaviour
             currentProgress += fillSpeed * Time.deltaTime;
             progressBar.fillAmount = currentProgress;
         }
-        else if (!hasCompleted)  // 아직 완료되지 않았을 때만 실행
+        else if (!hasCompleted)
         {
             hasCompleted = true;  // 완료 표시
             OnComplete?.Invoke();  // 한 번만 호출됨

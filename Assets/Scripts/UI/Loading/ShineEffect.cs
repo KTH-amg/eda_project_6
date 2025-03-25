@@ -9,13 +9,13 @@ public class ShineEffect : MonoBehaviour
 
     private RectTransform rt;
     private Image shineImage;
-    private RectBar parentBar;
+    private ProgressBar parentBar;
 
     private void Start()
 {
     rt = GetComponent<RectTransform>();
     shineImage = GetComponent<Image>();
-    parentBar = GetComponentInParent<RectBar>();
+    parentBar = GetComponentInParent<ProgressBar>();
     
     rt.anchoredPosition = new Vector2(0, 6f);
     

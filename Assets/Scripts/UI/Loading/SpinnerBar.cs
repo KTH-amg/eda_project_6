@@ -10,10 +10,10 @@ public class SpinnerBar : MonoBehaviour
     void Start()
     {
         // RectBar의 OnComplete 이벤트에 StopSpinning 메서드를 연결
-        var rectBar = FindObjectOfType<RectBar>();
-        if (rectBar != null)
+        var ProgressBar = FindObjectOfType<ProgressBar>();
+        if (ProgressBar != null)
         {
-            rectBar.OnComplete += StopSpinning;
+            ProgressBar.OnComplete += StopSpinning;
         }
     }
 
@@ -32,6 +32,7 @@ public class SpinnerBar : MonoBehaviour
         }
         else{
             Destroy(gameObject);
+            
         }
     }
 }

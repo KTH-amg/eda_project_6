@@ -18,19 +18,19 @@ public class LoadingText : MonoBehaviour
     void Start()
     {
         tmpText = GetComponent<TextMeshProUGUI>();
-        var rectBar = FindObjectOfType<RectBar>();
-        if (rectBar != null)
+        var ProgressBar = FindObjectOfType<ProgressBar>();
+        if (ProgressBar != null)
         {
-            updateCoroutine = StartCoroutine(UpdateTextBasedOnProgress(rectBar));
-            rectBar.OnComplete += ShowCompleteMessage;
+            updateCoroutine = StartCoroutine(UpdateTextBasedOnProgress(ProgressBar));
+            ProgressBar.OnComplete += ShowCompleteMessage;
         }
     }
 
-    private IEnumerator UpdateTextBasedOnProgress(RectBar rectBar)
+    private IEnumerator UpdateTextBasedOnProgress(ProgressBar ProgressBar)
     {
-        while (!rectBar.GetComponent<Image>().fillAmount.Equals(1f))  // 다 채워지면 종료
+        while (!ProgressBar.GetComponent<Image>().fillAmount.Equals(1f))  // 다 채워지면 종료
         {
-            float progress = rectBar.GetComponent<Image>().fillAmount;
+            float progress = ProgressBar.GetComponent<Image>().fillAmount;
             int messageIndex = Mathf.FloorToInt(progress * loadingMessages.Length);
             messageIndex = Mathf.Clamp(messageIndex, 0, loadingMessages.Length - 1);
             tmpText.text = loadingMessages[messageIndex];
