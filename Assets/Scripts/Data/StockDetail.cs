@@ -1,4 +1,3 @@
-using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,22 +6,22 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 
-public class StockDetail : MonoBehaviour
+public class StockDetail
 {
-    private string stock_name;
-    private string std_code;
-    private string abbr;
-    private string day;
-    private int closing_price;
-    private int contrast;
-    private float fluctuation_rate;
-    private int market_price;
-    private int high_price;
-    private int low_price;
-    private double trading_vol;
-    private long trs;
-    private long cpt;
-    private long num_of_sh;
+    public string stock_name;
+    public string std_code;
+    public string abbr;
+    public string day;
+    public int closing_price;
+    public int contrast;
+    public float fluctuation_rate;
+    public int market_price;
+    public int high_price;
+    public int low_price;
+    public double trading_vol;
+    public long trs;
+    public long cpt;
+    public long num_of_sh;
 
     public StockDetail(string name, string std, string d, int cl, string abb = "", 
         int co = 0, float fl = 0, int ma = 0, int hi = 0, int lo = 0, double tra = 0, 

@@ -12,13 +12,21 @@ using System.Globalization;
 
 public class StockInfo
 {
-    private static List<StockDetail> stock_data_arr;
-    private static string strtDd;
-    private static string endDd;
+    private List<StockDetail> stock_data_arr;
+    private string strtDd;
+    private string endDd;
     private float risk;
     private List<int> predicted_price;
 
-    static DataTable ConvertCsvToTable(string csvData)
+    public StockInfo(string start, string end)
+    {
+        stock_data_arr = new List<StockDetail>();
+        strtDd = start;
+        endDd = end;
+        predicted_price = new List<int>();
+    }
+
+    public DataTable ConvertCsvToTable(string csvData)
     {
         DataTable dataTable = new DataTable();
         using (var reader = new StringReader(csvData))
@@ -37,7 +45,7 @@ public class StockInfo
         }
     }
     
-    static async Task get_stock_info(string stock_name)
+    public async Task<List<StockDetail>> get_stock_info(string stock_name)
     {
         // 종목 표준코드, 약식코드 검색
         string std_code = "", abbr = "";
@@ -52,9 +60,6 @@ public class StockInfo
                     break;  // 조건에 맞는 첫 번째 행만 찾으면 종료
                 }
             }
-
-            // 리소스 해제
-            stock_reader.Close();
         }
 
         // 종목 주가 정보 수집
@@ -70,7 +75,6 @@ public class StockInfo
                     Convert.ToInt32(price_reader["closing_price"])));
                     break;  // 조건에 맞는 첫 번째 행만 찾으면 종료
             }
-            price_reader.Close();
         }
 
         // 종목의 현재가 수집
@@ -153,18 +157,14 @@ public class StockInfo
                     Convert.ToInt64(indv_reader["거래대금"]), Convert.ToInt64(indv_reader["시가총액"]),
                     Convert.ToInt64(indv_reader["상장주식수"])));
             }
-
-            indv_reader.Close();
         }
+
+        return stock_data_arr;
     }
-    /*
-    static void predict_stock_info(int inquiry_period)
+    
+    void predict_stock_info(int inquiry_period)
     {
-        stock_data_arr = new List<StockDetail>();
-        using (var reader = dbManager.select("stock_price_per_date", "*", $"std_code"))
-        {
-            // 예측일에 따른 예측치 계산
-        };
+        //날짜에 따른 예측 및 예측치 저장
+
     }
-    */
 }
