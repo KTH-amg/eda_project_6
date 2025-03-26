@@ -84,7 +84,7 @@ public class StockInfo : MonoBehaviour
                 DateTime startDate = DateTime.ParseExact(strtDd, "yyyy-MM-dd", CultureInfo.InvariantCulture);
                 DateTime endDate = DateTime.ParseExact(endDd, "yyyy-MM-dd", CultureInfo.InvariantCulture);
                 
-                if (startDate == today || endDate == today)
+                if (startDate == today && endDate == today)
                 {
                     // 날짜가 오늘이면 현재 가격 수집을 계속 진행
                     Debug.Log("Today!");
