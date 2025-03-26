@@ -1,3 +1,5 @@
+namespace stockinfo
+{
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +11,7 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using System.Linq;
 using System.Globalization;
-
+using stockdetail;
 public class StockInfo
 {
     private List<StockDetail> stock_data_arr;
@@ -167,4 +169,5 @@ public class StockInfo
         //날짜에 따른 예측 및 예측치 저장
 
     }
+}
 }

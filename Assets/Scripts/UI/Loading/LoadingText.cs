@@ -18,7 +18,7 @@ public class LoadingText : MonoBehaviour
     void Start()
     {
         tmpText = GetComponent<TextMeshProUGUI>();
-        var ProgressBar = FindObjectOfType<ProgressBar>();
+        var ProgressBar = FindFirstObjectByType<ProgressBar>();
         if (ProgressBar != null)
         {
             updateCoroutine = StartCoroutine(UpdateTextBasedOnProgress(ProgressBar));

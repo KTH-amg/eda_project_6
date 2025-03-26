@@ -4,74 +4,77 @@ namespace user
     using System.Collections.Generic;
 
     public class User
-{
-    private string user_id;
-    private string user_pw;
-    private string user_name;
-    private List<string> holding_stock;
-
-    private User() {}
-    public static User _instance;
-
-    public static User Instance
     {
-        get
+        private string user_id;
+        private string user_pw;
+        private string user_name;
+        private List<string> holding_stock;
+
+        private User()
         {
-            if (_instance == null)
-            {
-                _instance = new User();
-            }
-            return _instance;
+            holding_stock = new List<string>();
         }
-    }
+        public static User _instance;
 
-    public void setId(string id)
-    {
-        user_id = id;
-    }
+        public static User Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new User();
+                }
+                return _instance;
+            }
+        }
 
-    public void setPw(string pw)
-    {
-        user_pw = pw;
-    }
+        public void setId(string id)
+        {
+            user_id = id;
+        }
 
-    public void setName(string name)
-    {
-        user_name = name;
-    }
+        public void setPw(string pw)
+        {
+            user_pw = pw;
+        }
 
-    public void setStock(string stock)
-    {
-        holding_stock.Add(stock);
-    }
+        public void setName(string name)
+        {
+            user_name = name;
+        }
 
-    public void delStock(string stock)
-    {
-        holding_stock.Remove(stock);
-    }
+        public void setStock(string stock)
+        {
+            holding_stock.Add(stock);
+        }
 
-    public string getId()
-    {
-        return user_id;
-    }
+        public void delStock(string stock)
+        {
+            holding_stock.Remove(stock);
+        }
 
-    public string getPw()
-    {
-        return user_pw;
-    }
-    public string getName()
-    {
-        return user_name;
-    }
+        public string getId()
+        {
+            return user_id;
+        }
 
-    public List<string> getStock()
-    {
-        return holding_stock;
-    }
+        public string getPw()
+        {
+            return user_pw;
+        }
+        public string getName()
+        {
+            return user_name;
+        }
 
-    public void delUser()
-    {
-        _instance = null;
-    }
+        public List<string> getStock()
+        {
+            return holding_stock;
+        }
+
+        public void delUser()
+        {
+            _instance = null;
+        }
     }
 }
