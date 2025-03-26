@@ -18,6 +18,15 @@ public class ScrollManager : MonoBehaviour
     private const int MAX_ITEMS_PER_GROUP = 2;         // 그룹당 최대 아이템 수
     private List<string> holding_stock_List;
 
+    // 각 종목의 매수가와 수량을 저장할 구조체 정의
+    private class StockPurchaseInfo
+    {
+        public string PurchasePrice { get; set; }
+        public string NumberOfStocks { get; set; }
+    }
+
+    private Dictionary<string, StockPurchaseInfo> stockPurchaseInfos = new Dictionary<string, StockPurchaseInfo>();
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     private async void Start()
     {
@@ -62,6 +71,7 @@ public class ScrollManager : MonoBehaviour
         StockInfo stockInfo = new StockInfo(today, today);
         List<StockDetail> stock_data_arr = await stockInfo.get_stock_info(stockName);
 
+
         // 각 TMP 컴포넌트 찾기
         TextMeshProUGUI name = stockItem.transform.Find("name").GetComponent<TextMeshProUGUI>();
         TextMeshProUGUI cur_price = stockItem.transform.Find("cur_price").GetComponent<TextMeshProUGUI>();
@@ -74,11 +84,32 @@ public class ScrollManager : MonoBehaviour
         if (name != null) name.text = stockName;
         // 여기에 다른 데이터 설정 추가
         // 예: 현재가, 매수가, 수익률 등
-        if (cur_price != null) cur_price.text = "현재가 데이터";
-        if (my_price != null) my_price.text = "매수가 데이터";
-        if (margin != null) margin.text = "수익률 데이터";
-        if (fluct != null) fluct.text = "변동률 데이터";
-        if (attr != null) attr.text = "속성 데이터";
+        if (cur_price != null) cur_price.text = stock_data_arr[0].closing_price;
+
+        // 매수가와 수량 정보 설정
+        if (stockPurchaseInfos.ContainsKey(stockName))
+        {
+            var purchaseInfo = stockPurchaseInfos[stockName];
+            
+            if (my_price != null)
+                my_price.text = purchaseInfo.PurchasePrice;
+            
+            // 수익률 계산
+            if (margin != null && float.TryParse(stock_data_arr[0].closing_price, out float currentPrice) 
+                && float.TryParse(purchaseInfo.PurchasePrice, out float purchasePrice))
+            {
+                float marginRate = ((currentPrice - purchasePrice) / purchasePrice) * 100;
+                margin.text = $"{marginRate:F2}%";
+            }
+            
+            // 필요한 경우 수량 정보도 표시
+            // TextMeshProUGUI stockAmount = stockItem.transform.Find("amount").GetComponent<TextMeshProUGUI>();
+            // if (stockAmount != null)
+            //     stockAmount.text = purchaseInfo.NumberOfStocks;
+        }
+
+        if (fluct != null) fluct.text = stock_data_arr[0].fluctuation_rate;
+        if (attr != null) attr.text = stock_data_arr[0].abbr; 
     }
 
     private void CreateNewGroup()
@@ -98,8 +129,15 @@ public class ScrollManager : MonoBehaviour
         TabManager.OnStockAdded -= RefreshStockList;
     }
 
-    private async void RefreshStockList(string newStock)
+    private async void RefreshStockList(string newStock, string purchasePrice, string numOfStock)
     {
+        // 매수 정보 저장
+        stockPurchaseInfos[newStock] = new StockPurchaseInfo 
+        { 
+            PurchasePrice = purchasePrice,
+            NumberOfStocks = numOfStock
+        };
+
         // 기존 그룹과 아이템들 제거
         foreach (Transform child in scrollRect.content)
         {

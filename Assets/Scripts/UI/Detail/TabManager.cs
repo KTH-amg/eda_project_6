@@ -11,6 +11,8 @@ public class TabManager : MonoBehaviour
     [SerializeField] private GameObject mystockComponent;
     [SerializeField] private GameObject addStockPopup; // 종목 추가 팝업 UI
     [SerializeField] private TMP_Dropdown stockDropdown; // 종목 선택 드롭다운
+    [SerializeField] private TMP_InputField purchasePriceInput; // 매수가 입력 필드
+    [SerializeField] private TMP_InputField numOfStockInput;    // 주식 수량 입력 필드
 
     private Vector3[] tabPositions = new Vector3[]
     {
@@ -24,7 +26,7 @@ public class TabManager : MonoBehaviour
     private Color unselectedColor = new Color(0.5f, 0.5f, 0.5f); // 회색
 
     // 종목 추가 이벤트를 위한 델리게이트와 이벤트 선언
-    public delegate void StockAddedEventHandler(string stockName);
+    public delegate void StockAddedEventHandler(string stockName, string purchasePrice, string numOfStock);
     public static event StockAddedEventHandler OnStockAdded;
 
     void Start()
@@ -147,19 +149,19 @@ public class TabManager : MonoBehaviour
             return;
         }
 
-        if (addStockPopup != null)
+        if (addStockPopup != null && stockDropdown != null)
         {
-            if (stockDropdown != null)
-            {
-                string selectedStock = stockDropdown.options[stockDropdown.value].text;
-                Debug.Log($"Selected stock: {selectedStock}");
-                User.Instance.setStock(selectedStock);
-                
-                // 종목 추가 이벤트 발생
-                OnStockAdded?.Invoke(selectedStock);
-                
-                OnClickClosePopup();
-            }
+            string selectedStock = stockDropdown.options[stockDropdown.value].text;
+            string purchasePrice = purchasePriceInput.text;
+            string numOfStock = numOfStockInput.text;
+            
+            Debug.Log($"Selected stock: {selectedStock}, Purchase price: {purchasePrice}, Number of stocks: {numOfStock}");
+            User.Instance.setStock(selectedStock, purchasePrice, numOfStock);
+            
+            // 이벤트 호출 시 모든 정보 전달
+            OnStockAdded?.Invoke(selectedStock, purchasePrice, numOfStock);
+            
+            OnClickClosePopup();
         }
     }
 }
