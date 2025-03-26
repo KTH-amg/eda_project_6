@@ -12,7 +12,8 @@ using CsvHelper.Configuration;
 using System.Linq;
 using System.Globalization;
 using stockdetail;
-public class StockInfo
+using UnityEngine;
+public class StockInfo : MonoBehaviour
 {
     private List<StockDetail> stock_data_arr;
     private string strtDd;
@@ -70,17 +71,23 @@ public class StockInfo
                 }
             }
         }
+        Debug.Log(std_code);
+        Debug.Log(abbr);
 
         // 종목 주가 정보 수집
         using (var price_reader = dbManager.select(
-            "stock_price_per_date p", "*", $"s.stock_name={stock_name} AND (p.date BETWEEN {strtDd} AND {endDd})", "stock s", "p.std_code=s.std_code"))
+            "stock_price_per_date p", "*", $"s.stock_name='{stock_name}' AND (p.day BETWEEN '{strtDd}' AND '{endDd}')", "stock s", "p.std_code=s.std_code"))
         {
             if (price_reader == null || !price_reader.HasRows)  // 데이터가 없는 경우 체크
             {
-                if (strtDd == DateTime.Now.ToString("yyyy-MM-dd") || endDd == DateTime.Now.ToString("yyyy-MM-dd"))
+                DateTime today = DateTime.Now.Date;
+                DateTime startDate = DateTime.ParseExact(strtDd, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                DateTime endDate = DateTime.ParseExact(endDd, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                
+                if (startDate == today || endDate == today)
                 {
-                    // If the date is today, we'll continue with current price collection
-                    // No need for continue statement here
+                    // 날짜가 오늘이면 현재 가격 수집을 계속 진행
+                    Debug.Log("Today!");
                 }
                 else
                 {
@@ -96,7 +103,6 @@ public class StockInfo
                         stock_name, std_code, 
                         price_reader["day"].ToString(), 
                         Convert.ToInt32(price_reader["closing_price"])));
-                    break;  // 조건에 맞는 첫 번째 행만 찾으면 종료
                 }
             }
         }
@@ -104,7 +110,7 @@ public class StockInfo
         // 종목의 현재가 수집
         // generate 헤더 요청 URL
         string url_price = "http://data.krx.co.kr/comm/fileDn/GenerateOTP/generate.cmd";
-        string day = DateTime.Now.ToString("yyyy/MM/dd");
+        string day = DateTime.Now.ToString("yyyyMMdd");
 
         // generate 페이로드의 양식 데이터
         var data_price = new Dictionary<string, string>
@@ -167,22 +173,44 @@ public class StockInfo
         }
 
         DataTable indv_table = ConvertCsvToTable(indv_data);
-        int cur_price; //현재가
+        int cur_price = 0; //현재가
+
+        // 디버깅을 위해 테이블 정보 출력
+        Debug.Log($"테이블 행 수: {indv_table.Rows.Count}");
+        foreach (DataColumn column in indv_table.Columns)
+        {
+            Debug.Log($"열 이름: {column.ColumnName}");
+        }
+
         using(var indv_reader = indv_table.CreateDataReader())
         {
+            if (!indv_reader.HasRows)
+            {
+                Debug.LogError("데이터가 없습니다!");
+            }
+            
             while (indv_reader.Read())
             {
-                cur_price = Convert.ToInt32(indv_reader["종가"]);
-                stock_data_arr.Add(new StockDetail(
-                    stock_name, std_code, day, cur_price, abbr, 
-                    Convert.ToInt32(indv_reader["대비"]), Convert.ToSingle(indv_reader["등락률"]),
-                    Convert.ToInt32(indv_reader["시가"]), Convert.ToInt32(indv_reader["고가"]),
-                    Convert.ToInt32(indv_reader["저가"]), Convert.ToDouble(indv_reader["거래량"]),
-                    Convert.ToInt64(indv_reader["거래대금"]), Convert.ToInt64(indv_reader["시가총액"]),
-                    Convert.ToInt64(indv_reader["상장주식수"])));
+                try 
+                {
+                    cur_price = Convert.ToInt32(indv_reader["종가"]);
+                    Debug.Log($"종가 값: {cur_price}");
+                    stock_data_arr.Add(new StockDetail(
+                        stock_name, std_code, day, cur_price, abbr, 
+                        Convert.ToInt32(indv_reader["대비"]), Convert.ToSingle(indv_reader["등락률"]),
+                        Convert.ToInt32(indv_reader["시가"]), Convert.ToInt32(indv_reader["고가"]),
+                        Convert.ToInt32(indv_reader["저가"]), Convert.ToDouble(indv_reader["거래량"]),
+                        Convert.ToInt64(indv_reader["거래대금"]), Convert.ToInt64(indv_reader["시가총액"]),
+                        Convert.ToInt64(indv_reader["상장주식수"])));
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"데이터 처리 중 오류 발생: {ex.Message}");
+                }
             }
         }
 
+        Debug.Log(cur_price);
         return stock_data_arr;
     }
     

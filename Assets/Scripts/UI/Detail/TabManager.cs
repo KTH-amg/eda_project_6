@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System;
 using user;
 
 public class TabManager : MonoBehaviour
@@ -26,7 +27,7 @@ public class TabManager : MonoBehaviour
     private Color unselectedColor = new Color(0.5f, 0.5f, 0.5f); // 회색
 
     // 종목 추가 이벤트를 위한 델리게이트와 이벤트 선언
-    public delegate void StockAddedEventHandler(string stockName, string purchasePrice, string numOfStock);
+    public delegate void StockAddedEventHandler(string stockName, int purchasePrice, int numOfStock);
     public static event StockAddedEventHandler OnStockAdded;
 
     void Start()
@@ -152,8 +153,8 @@ public class TabManager : MonoBehaviour
         if (addStockPopup != null && stockDropdown != null)
         {
             string selectedStock = stockDropdown.options[stockDropdown.value].text;
-            string purchasePrice = purchasePriceInput.text;
-            string numOfStock = numOfStockInput.text;
+            int purchasePrice = Convert.ToInt32(purchasePriceInput.text);
+            int numOfStock = Convert.ToInt32(numOfStockInput.text);
             
             Debug.Log($"Selected stock: {selectedStock}, Purchase price: {purchasePrice}, Number of stocks: {numOfStock}");
             User.Instance.setStock(selectedStock, purchasePrice, numOfStock);

@@ -84,7 +84,7 @@ public class ScrollManager : MonoBehaviour
         if (name != null) name.text = stockName;
         // 여기에 다른 데이터 설정 추가
         // 예: 현재가, 매수가, 수익률 등
-        if (cur_price != null) cur_price.text = stock_data_arr[0].closing_price;
+        if (cur_price != null) cur_price.text = Convert.ToString(stock_data_arr[0].closing_price);
 
         // 매수가와 수량 정보 설정
         if (stockPurchaseInfos.ContainsKey(stockName))
@@ -95,7 +95,7 @@ public class ScrollManager : MonoBehaviour
                 my_price.text = purchaseInfo.PurchasePrice;
             
             // 수익률 계산
-            if (margin != null && float.TryParse(stock_data_arr[0].closing_price, out float currentPrice) 
+            if (margin != null && Convert.ToSingle(stock_data_arr[0].closing_price) as currentPrice
                 && float.TryParse(purchaseInfo.PurchasePrice, out float purchasePrice))
             {
                 float marginRate = ((currentPrice - purchasePrice) / purchasePrice) * 100;
@@ -108,7 +108,7 @@ public class ScrollManager : MonoBehaviour
             //     stockAmount.text = purchaseInfo.NumberOfStocks;
         }
 
-        if (fluct != null) fluct.text = stock_data_arr[0].fluctuation_rate;
+        if (fluct != null) fluct.text = Convert.ToString(stock_data_arr[0].fluctuation_rate);
         if (attr != null) attr.text = stock_data_arr[0].abbr; 
     }
 
@@ -129,7 +129,7 @@ public class ScrollManager : MonoBehaviour
         TabManager.OnStockAdded -= RefreshStockList;
     }
 
-    private async void RefreshStockList(string newStock, string purchasePrice, string numOfStock)
+    private async void RefreshStockList(string newStock, int purchasePrice, int numOfStock)
     {
         // 매수 정보 저장
         stockPurchaseInfos[newStock] = new StockPurchaseInfo 
