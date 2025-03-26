@@ -79,7 +79,8 @@ public class StockInfo
             {
                 if (strtDd == DateTime.Now.ToString("yyyy-MM-dd") || endDd == DateTime.Now.ToString("yyyy-MM-dd"))
                 {
-                    continue;
+                    // If the date is today, we'll continue with current price collection
+                    // No need for continue statement here
                 }
                 else
                 {
@@ -90,17 +91,12 @@ public class StockInfo
             {
                 while (price_reader.Read())
                 {
-                    if (user_reader == null || !user_reader.HasRows)  // 데이터가 없는 경우 체크
-                    {
-                        Debug.Log("회원가입 실패: DB와의 통신 실패");
-                        // 화면에 오류 메시지 출력
-                    }
                     DateTime date = Convert.ToDateTime(price_reader["day"]);
                     stock_data_arr.Add(new StockDetail(
                         stock_name, std_code, 
                         price_reader["day"].ToString(), 
                         Convert.ToInt32(price_reader["closing_price"])));
-                        break;  // 조건에 맞는 첫 번째 행만 찾으면 종료
+                    break;  // 조건에 맞는 첫 번째 행만 찾으면 종료
                 }
             }
         }
