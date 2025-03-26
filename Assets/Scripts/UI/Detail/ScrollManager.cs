@@ -75,7 +75,7 @@ public class ScrollManager : MonoBehaviour
         // 각 TMP 컴포넌트 찾기
         TextMeshProUGUI name = stockItem.transform.Find("name").GetComponent<TextMeshProUGUI>();
         TextMeshProUGUI cur_price = stockItem.transform.Find("cur_price").GetComponent<TextMeshProUGUI>();
-        TextMeshProUGUI my_price = stockItem.transform.Find("my_price").GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI my_price = stockItem.transform.Find("mine").GetComponent<TextMeshProUGUI>();
         TextMeshProUGUI margin = stockItem.transform.Find("margin").GetComponent<TextMeshProUGUI>();
         TextMeshProUGUI fluct = stockItem.transform.Find("fluc").GetComponent<TextMeshProUGUI>();
         TextMeshProUGUI attr = stockItem.transform.Find("attr").GetComponent<TextMeshProUGUI>();

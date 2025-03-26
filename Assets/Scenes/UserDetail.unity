@@ -5854,6 +5854,8 @@ MonoBehaviour:
   mystockComponent: {fileID: 690896281}
   addStockPopup: {fileID: 393374854}
   stockDropdown: {fileID: 1640797347}
+  purchasePriceInput: {fileID: 1971124200}
+  numOfStockInput: {fileID: 1925319555}
 --- !u!1 &1053416075
 GameObject:
   m_ObjectHideFlags: 0
@@ -9993,7 +9995,7 @@ GameObject:
   - component: {fileID: 1925319556}
   - component: {fileID: 1925319555}
   m_Layer: 0
-  m_Name: stock_price_input (2)
+  m_Name: num_input
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
