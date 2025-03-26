@@ -149,11 +149,10 @@ public class TabManager : MonoBehaviour
 
         if (addStockPopup != null)
         {
-            TMP_Dropdown dropdown = addStockPopup.GetComponentInChildren<TMP_Dropdown>();
-            
-            if (dropdown != null)
+            if (stockDropdown != null)
             {
-                string selectedStock = dropdown.options[dropdown.value].text;
+                string selectedStock = stockDropdown.options[stockDropdown.value].text;
+                Debug.Log($"Selected stock: {selectedStock}");
                 User.Instance.setStock(selectedStock);
                 
                 // 종목 추가 이벤트 발생
