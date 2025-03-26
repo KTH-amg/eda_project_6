@@ -56,25 +56,25 @@ public class dbManager : MonoBehaviour
         }
     }
 
-    public static MySqlErrorCode insert(string user_id, string user_pw, string user_name)
+    public static MySqlErrorCode insert(string table_name, string columns, string data)
     {
-        Debug.Log($"ID:{user_id}, 비밀번호:{user_pw}, 이름:{user_name}");
+        Debug.Log($"테이블:{table_name}, 열:{columns}, 데이터:{data}");
         db_connect(); // 접속
 
         try
         {
+            /*
             var cmd = "INSERT INTO user (user_id, user_pw, username) VALUES (@user_id, @user_pw, @username);";
             MySqlCommand db_cmd = new MySqlCommand(cmd, connection.Value);
             db_cmd.Parameters.AddWithValue("@user_id", user_id);
             db_cmd.Parameters.AddWithValue("@user_pw", user_pw);
             db_cmd.Parameters.AddWithValue("@username", user_name);
             db_cmd.ExecuteNonQuery();
-            /*
-            string cmd = $"INSERT INTO user VALUES ('{id}', '{name}', '{pw}');";
+            */
+            string cmd = $"INSERT INTO {table_name} ({columns}) VALUES ({data});";
             Debug.Log(cmd);
             MySqlCommand db_cmd = new MySqlCommand(cmd, connection.Value); // 명령어를 커맨드에 입력
             db_cmd.ExecuteNonQuery(); // 명령어를 SQL에 보냄
-            */
 
             return MySqlErrorCode.None;
         }
