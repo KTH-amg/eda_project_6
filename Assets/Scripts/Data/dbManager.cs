@@ -63,15 +63,32 @@ public class dbManager : MonoBehaviour
 
         try
         {
-            /*
-            var cmd = "INSERT INTO user (user_id, user_pw, username) VALUES (@user_id, @user_pw, @username);";
-            MySqlCommand db_cmd = new MySqlCommand(cmd, connection.Value);
-            db_cmd.Parameters.AddWithValue("@user_id", user_id);
-            db_cmd.Parameters.AddWithValue("@user_pw", user_pw);
-            db_cmd.Parameters.AddWithValue("@username", user_name);
-            db_cmd.ExecuteNonQuery();
-            */
             string cmd = $"INSERT INTO {table_name} ({columns}) VALUES ({data});";
+            Debug.Log(cmd);
+            MySqlCommand db_cmd = new MySqlCommand(cmd, connection.Value); // 명령어를 커맨드에 입력
+            db_cmd.ExecuteNonQuery(); // 명령어를 SQL에 보냄
+
+            return MySqlErrorCode.None;
+        }
+        catch (MySqlException e) // SQL 오류
+        {
+            Debug.Log(e.ToString());
+            return e.ErrorCode;
+        }
+        finally
+        {
+            db_disconnect(); // 접속 해제
+        }
+    }
+
+    public static MySqlErrorCode delete(string table_name, string cond)
+    {
+        Debug.Log($"테이블:{table_name}");
+        db_connect(); // 접속
+
+        try
+        {
+            string cmd = $"DELETE FROM {table_name} WHERE {cond};";
             Debug.Log(cmd);
             MySqlCommand db_cmd = new MySqlCommand(cmd, connection.Value); // 명령어를 커맨드에 입력
             db_cmd.ExecuteNonQuery(); // 명령어를 SQL에 보냄
