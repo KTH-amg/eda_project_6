@@ -237,7 +237,7 @@ public class SignupManager : MonoBehaviour
                         int count = Convert.ToInt32(user_reader["count(*)"]);
                         if (count == 0)
                         {
-                            int error = Convert.ToInt32(dbManager.insert(id, name, password));
+                            int error = Convert.ToInt32(dbManager.insert("user", "user_id, username, user_pw", $"'{id}', '{name}', '{password}'"));
                             if (error == 0)
                             {
                                 User.Instance.setId(id);

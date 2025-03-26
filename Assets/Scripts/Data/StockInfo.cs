@@ -53,13 +53,20 @@ public class StockInfo
         string std_code = "", abbr = "";
         using (var stock_reader = dbManager.select("stock", "*"))
         {
-            while (stock_reader.Read())
+            if (stock_reader == null || !stock_reader.HasRows)  // 데이터가 없는 경우 체크
             {
-                if (stock_reader["stock_name"].ToString() == stock_name)
+                return null;
+            }
+            else
+            {
+                while (stock_reader.Read())
                 {
-                    std_code = (string)stock_reader["std_code"];
-                    abbr = (string)stock_reader["abbr"];
-                    break;  // 조건에 맞는 첫 번째 행만 찾으면 종료
+                    if (stock_reader["stock_name"].ToString() == stock_name)
+                    {
+                        std_code = (string)stock_reader["std_code"];
+                        abbr = (string)stock_reader["abbr"];
+                        break;  // 조건에 맞는 첫 번째 행만 찾으면 종료
+                    }
                 }
             }
         }
@@ -68,14 +75,33 @@ public class StockInfo
         using (var price_reader = dbManager.select(
             "stock_price_per_date p", "*", $"s.stock_name={stock_name} AND (p.date BETWEEN {strtDd} AND {endDd})", "stock s", "p.std_code=s.std_code"))
         {
-            while (price_reader.Read())
+            if (price_reader == null || !price_reader.HasRows)  // 데이터가 없는 경우 체크
             {
-                DateTime date = Convert.ToDateTime(price_reader["day"]);
-                stock_data_arr.Add(new StockDetail(
-                    stock_name, std_code, 
-                    price_reader["day"].ToString(), 
-                    Convert.ToInt32(price_reader["closing_price"])));
-                    break;  // 조건에 맞는 첫 번째 행만 찾으면 종료
+                if (strtDd == DateTime.Now.ToString("yyyy-MM-dd") || endDd == DateTime.Now.ToString("yyyy-MM-dd"))
+                {
+                    continue;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                while (price_reader.Read())
+                {
+                    if (user_reader == null || !user_reader.HasRows)  // 데이터가 없는 경우 체크
+                    {
+                        Debug.Log("회원가입 실패: DB와의 통신 실패");
+                        // 화면에 오류 메시지 출력
+                    }
+                    DateTime date = Convert.ToDateTime(price_reader["day"]);
+                    stock_data_arr.Add(new StockDetail(
+                        stock_name, std_code, 
+                        price_reader["day"].ToString(), 
+                        Convert.ToInt32(price_reader["closing_price"])));
+                        break;  // 조건에 맞는 첫 번째 행만 찾으면 종료
+                }
             }
         }
 
