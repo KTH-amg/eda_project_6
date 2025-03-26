@@ -21,8 +21,8 @@ public class ScrollManager : MonoBehaviour
     // 각 종목의 매수가와 수량을 저장할 구조체 정의
     private class StockPurchaseInfo
     {
-        public string PurchasePrice { get; set; }
-        public string NumberOfStocks { get; set; }
+        public int PurchasePrice { get; set; }
+        public int NumberOfStocks { get; set; }
     }
 
     private Dictionary<string, StockPurchaseInfo> stockPurchaseInfos = new Dictionary<string, StockPurchaseInfo>();
@@ -92,12 +92,13 @@ public class ScrollManager : MonoBehaviour
             var purchaseInfo = stockPurchaseInfos[stockName];
             
             if (my_price != null)
-                my_price.text = purchaseInfo.PurchasePrice;
+                my_price.text = purchaseInfo.PurchasePrice.ToString();
             
             // 수익률 계산
-            if (margin != null && Convert.ToSingle(stock_data_arr[0].closing_price) as currentPrice
-                && float.TryParse(purchaseInfo.PurchasePrice, out float purchasePrice))
+            if (margin != null)
             {
+                float currentPrice = (float)stock_data_arr[0].closing_price;
+                float purchasePrice = float.Parse(purchaseInfo.PurchasePrice.ToString());
                 float marginRate = ((currentPrice - purchasePrice) / purchasePrice) * 100;
                 margin.text = $"{marginRate:F2}%";
             }
