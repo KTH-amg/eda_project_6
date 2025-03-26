@@ -26,7 +26,7 @@ public class StockDataManager : MonoBehaviour
         foreach (StockDetail stock in stock_data_arr)
         {
             dataValues.Add(stock.closing_price);
-            dataLabels.Add(stock.day);
+            dataLabels.Add(stock.day.Substring(5, 5));
         }
 
         drawGraph.SetStockData(dataValues, dataLabels);

@@ -86,8 +86,8 @@ public class DrawGraph : MonoBehaviour
         float graphHeight = graphContainer.rect.height;
         
         // 축 여백 설정 - 레이블을 위한 공간 확보
-        float xAxisMargin = 50f;  // 왼쪽 여백(Y축 레이블용)
-        float yAxisMargin = 30f;  // 아래쪽 여백(X축 레이블용)
+        float xAxisMargin = 50f;           // 왼쪽 여백(Y축 레이블용)
+        float yAxisMargin = 30f;           // 아래쪽 여백 - 기존 60f에서 30f로 감소
         
         // 실제 그래프가 그려질 영역 계산
         float plotWidth = graphWidth - xAxisMargin;
@@ -127,6 +127,7 @@ public class DrawGraph : MonoBehaviour
                     displayValue = Mathf.Round(rawValue / (magnitude / 10)) * (magnitude / 10);
                 }
                 
+                // isXAxisLabel 매개변수를 전달하지 않으면 기본값 false가 적용됩니다
                 GameObject label = CreateLabel(displayValue.ToString(yAxisNumberFormat), new Vector2(xAxisMargin/2, yPos));
                 labels.Add(label);
             }
@@ -146,7 +147,10 @@ public class DrawGraph : MonoBehaviour
             // X축 레이블 
             if (showLabels)
             {
-                GameObject label = CreateLabel(dataLabels[i], new Vector2(xPositions[i], yAxisMargin/2));
+                // X축 레이블 위치를 더 아래로 이동 (yAxisMargin/2 → yAxisMargin * 0.2)
+                // 음수 값을 사용하여 그래프 영역 밖으로 완전히 빼내기
+                Vector2 labelPosition = new Vector2(xPositions[i], -10); // 그래프 영역 밑으로 이동
+                GameObject label = CreateLabel(dataLabels[i], labelPosition, true);
                 labels.Add(label);
             }
         }
@@ -334,7 +338,7 @@ public class DrawGraph : MonoBehaviour
         return gridObject;
     }
 
-    private GameObject CreateLabel(string text, Vector2 position)
+    private GameObject CreateLabel(string text, Vector2 position, bool isXAxisLabel = false)
     {
         GameObject labelObject = new GameObject("Label");
         labelObject.transform.SetParent(graphContainer, false);
@@ -343,7 +347,9 @@ public class DrawGraph : MonoBehaviour
         rectTransform.anchoredPosition = position;
         rectTransform.anchorMin = Vector2.zero;
         rectTransform.anchorMax = Vector2.zero;
-        rectTransform.sizeDelta = new Vector2(70, 30);
+        
+        // X축 레이블 크기를 더 합리적으로 조정 (100,60에서 축소)
+        rectTransform.sizeDelta = isXAxisLabel ? new Vector2(70, 40) : new Vector2(70, 30);
         
         TextMeshProUGUI textComponent = labelObject.AddComponent<TextMeshProUGUI>();
         textComponent.text = text;
@@ -355,7 +361,22 @@ public class DrawGraph : MonoBehaviour
         
         textComponent.fontSize = fontSize;
         textComponent.color = labelColor;
-        textComponent.alignment = position.x < 0 ? TextAlignmentOptions.MidlineRight : TextAlignmentOptions.Midline;
+        
+        if (isXAxisLabel)
+        {
+            // X축 레이블 회전 각도 조정
+            rectTransform.Rotate(0, 0, 30); // 왼쪽으로 45도 회전
+            
+            // 정렬 방식 변경
+            textComponent.alignment = TextAlignmentOptions.Center; // 중앙 정렬
+            
+            // 위치 미세 조정 (아래로 약간 이동)
+            rectTransform.anchoredPosition += new Vector2(0, -10); // 수치 감소
+        }
+        else
+        {
+            textComponent.alignment = position.x < 0 ? TextAlignmentOptions.MidlineRight : TextAlignmentOptions.Midline;
+        }
         
         textComponent.enableAutoSizing = false;
         textComponent.fontStyle = FontStyles.Bold;
@@ -363,9 +384,4 @@ public class DrawGraph : MonoBehaviour
         return labelObject;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }
