@@ -100,6 +100,25 @@ namespace user
 
         public List<string> getStock()
         {
+            holding_stock.Clear(); // 기존 리스트 초기화
+            
+            using (var hold_reader = dbManager.select(
+                "holding_stock h", "*", $"h.user_id='{user_id}'", "stock s", "h.std_code=s.std_code"))
+            {
+                if (hold_reader == null || !hold_reader.HasRows)  // 데이터가 없는 경우 체크
+                {
+                    return holding_stock; // 빈 리스트 반환
+                }
+                else
+                {
+                    while (hold_reader.Read())
+                    {
+                        string name = Convert.ToString(hold_reader["stock_name"]);
+                        holding_stock.Add(name); // 각 std_code를 리스트에 추가
+                    }
+                }
+            }
+
             return holding_stock;
         }
 
