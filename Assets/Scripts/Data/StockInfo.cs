@@ -174,7 +174,6 @@ public class StockInfo : MonoBehaviour
         }
 
         DataTable indv_table = ConvertCsvToTable(indv_data);
-        int cur_price = 0; //현재가
 
         // 디버깅을 위해 테이블 정보 출력
         Debug.Log($"테이블 행 수: {indv_table.Rows.Count}");
@@ -182,35 +181,32 @@ public class StockInfo : MonoBehaviour
         {
             Debug.Log($"열 이름: {column.ColumnName}");
         }
-
-        using(var indv_reader = indv_table.CreateDataReader())
-        {
-            if (!indv_reader.HasRows)
-            {
-                Debug.LogError("데이터가 없습니다!");
-            }
             
-            while (indv_reader.Read())
+        // 테이블의 모든 행을 리스트로 변환
+        var rows = new List<DataRow>();
+        foreach (DataRow row in indv_table.Rows)
+        {
+            rows.Add(row);
+        }
+            
+        // 리스트를 역순으로 순회
+        for (int i = rows.Count - 1; i >= 0; i--)
+        {
+            try 
             {
-                try 
-                {
-                    cur_price = Convert.ToInt32(indv_reader["종가"]);
-                    //Debug.Log($"종가 값: {cur_price}");
-                    stock_data_arr.Add(new StockDetail(
-                        stock_name, std_code, Convert.ToString(indv_reader["일자"]), cur_price, abbr, 
-                        Convert.ToInt32(indv_reader["대비"]), Convert.ToSingle(indv_reader["등락률"]),
-                        Convert.ToInt32(indv_reader["시가"]), Convert.ToInt32(indv_reader["고가"]),
-                        Convert.ToInt32(indv_reader["저가"]), Convert.ToDouble(indv_reader["거래량"]),
-                        Convert.ToInt64(indv_reader["거래대금"]), Convert.ToInt64(indv_reader["시가총액"]),
-                        Convert.ToInt64(indv_reader["상장주식수"])));
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"데이터 처리 중 오류 발생: {ex.Message}");
-                }
+                stock_data_arr.Add(new StockDetail(
+                    stock_name, std_code, Convert.ToString(rows[i]["일자"]), Convert.ToInt32(rows[i]["종가"]), abbr, 
+                    Convert.ToInt32(rows[i]["대비"]), Convert.ToSingle(rows[i]["등락률"]),
+                    Convert.ToInt32(rows[i]["시가"]), Convert.ToInt32(rows[i]["고가"]),
+                    Convert.ToInt32(rows[i]["저가"]), Convert.ToDouble(rows[i]["거래량"]),
+                    Convert.ToInt64(rows[i]["거래대금"]), Convert.ToInt64(rows[i]["시가총액"]),
+                    Convert.ToInt64(rows[i]["상장주식수"])));
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"데이터 처리 중 오류 발생: {ex.Message}");
             }
         }
-        
         return stock_data_arr;
     }
     
