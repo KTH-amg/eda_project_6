@@ -112,7 +112,6 @@ public class StockInfo : MonoBehaviour
         // 종목 주가 정보 수집
         // generate 헤더 요청 URL
         string url_price = "http://data.krx.co.kr/comm/fileDn/GenerateOTP/generate.cmd";
-        string day = DateTime.Now.ToString("yyyyMMdd");
 
         // generate 페이로드의 양식 데이터
         var data_price = new Dictionary<string, string>
@@ -198,7 +197,7 @@ public class StockInfo : MonoBehaviour
                     cur_price = Convert.ToInt32(indv_reader["종가"]);
                     //Debug.Log($"종가 값: {cur_price}");
                     stock_data_arr.Add(new StockDetail(
-                        stock_name, std_code, day, cur_price, abbr, 
+                        stock_name, std_code, Convert.ToString(indv_reader["일자"]), cur_price, abbr, 
                         Convert.ToInt32(indv_reader["대비"]), Convert.ToSingle(indv_reader["등락률"]),
                         Convert.ToInt32(indv_reader["시가"]), Convert.ToInt32(indv_reader["고가"]),
                         Convert.ToInt32(indv_reader["저가"]), Convert.ToDouble(indv_reader["거래량"]),

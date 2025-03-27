@@ -18,7 +18,7 @@ public class StockDataManager : MonoBehaviour
         // 오늘 날짜 구하기
         System.DateTime today = System.DateTime.Today;
         // 29일 전 날짜 구하기
-        System.DateTime startDate = today.AddDays(-13);
+        System.DateTime startDate = today.AddDays(-29);
         string today_str = today.ToString("yyyyMMdd");
         string startDate_str = startDate.ToString("yyyyMMdd");
         StockInfo stockInfo = new StockInfo(startDate_str, today_str);
@@ -30,8 +30,8 @@ public class StockDataManager : MonoBehaviour
         foreach (StockDetail stock in stock_data_arr)
         {
             dataValues.Add(stock.closing_price);
-            string dateStr = stock.day.ToString();
-            DateTime date = DateTime.ParseExact(dateStr, "yyyyMMdd", null);
+            string dateStr = stock.day;
+            DateTime date = DateTime.ParseExact(dateStr, "yyyy/MM/dd", null);
             string formattedDate = date.ToString("MM-dd");
             dataLabels.Add(formattedDate);
         }
@@ -65,16 +65,18 @@ public class StockDataManager : MonoBehaviour
             }
         }
 
+        GameObject.Find("stock_name_txt").GetComponent<TextMeshProUGUI>().text = stock_name;
+
         GameObject.Find("cur_price_data").GetComponent<TextMeshProUGUI>().text = stock_data_arr[stock_data_arr.Count - 1].closing_price.ToString();
         GameObject.Find("cur_price_cont").GetComponent<TextMeshProUGUI>().text = stock_data_arr[stock_data_arr.Count - 1].contrast.ToString();
 
         GameObject.Find("avg_price_data").GetComponent<TextMeshProUGUI>().text = (sum / stock_data_arr.Count).ToString();
 
         GameObject.Find("max_price_data").GetComponent<TextMeshProUGUI>().text = maxPrice.ToString();
-        GameObject.Find("max_price_cont").GetComponent<TextMeshProUGUI>().text = stock_data_arr[maxIndex].day;
+        GameObject.Find("max_price_date").GetComponent<TextMeshProUGUI>().text = stock_data_arr[maxIndex].day;
 
         GameObject.Find("min_price_data").GetComponent<TextMeshProUGUI>().text = minPrice.ToString();
-        GameObject.Find("min_price_cont").GetComponent<TextMeshProUGUI>().text = stock_data_arr[minIndex].day;
+        GameObject.Find("min_price_date").GetComponent<TextMeshProUGUI>().text = stock_data_arr[minIndex].day;
 
         GameObject.Find("fluc_rate_data").GetComponent<TextMeshProUGUI>().text = stock_data_arr[stock_data_arr.Count - 1].fluctuation_rate.ToString();
 
