@@ -15,6 +15,7 @@ public class ScrollManager : MonoBehaviour
     
     private GameObject currentGroup;                    // 현재 활성화된 그룹
     private int itemsInCurrentGroup = 0;               // 현재 그룹에 들어있는 아이템 수
+    private int totalItemsAdded = 0;
     private const int MAX_ITEMS_PER_GROUP = 2;         // 그룹당 최대 아이템 수
     private List<string> holding_stock_List;
     private List<Toggle> stockToggles = new List<Toggle>();
@@ -59,10 +60,11 @@ public class ScrollManager : MonoBehaviour
             CreateNewGroup();
         }
 
-        string stockName = holding_stock_List[itemsInCurrentGroup];
+        string stockName = holding_stock_List[totalItemsAdded];
         GameObject newView = Instantiate(viewPrefab, currentGroup.transform);
         await SetStockItemData(newView, stockName);
         
+        totalItemsAdded++;
         itemsInCurrentGroup++;
     }
 
@@ -157,6 +159,7 @@ public class ScrollManager : MonoBehaviour
         // 변수 초기화
         currentGroup = null;
         itemsInCurrentGroup = 0;
+        totalItemsAdded = 0;
         stockToggles.Clear();  // Toggle 리스트도 초기화
 
         // 리스트 다시 가져오기
@@ -214,6 +217,7 @@ public class ScrollManager : MonoBehaviour
         // 변수 초기화
         currentGroup = null;
         itemsInCurrentGroup = 0;
+        totalItemsAdded = 0;
         stockToggles.Clear();
 
         // 리스트 다시 가져오기

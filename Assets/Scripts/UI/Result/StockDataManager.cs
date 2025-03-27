@@ -14,7 +14,10 @@ public class StockDataManager : MonoBehaviour
     async void Start()
     {
         drawGraph = FindFirstObjectByType<DrawGraph>();
-        string stock_name = GameObject.Find("LoadResult").GetComponent<LoadResult>().GetStockName();
+        GameObject loadResult = GameObject.Find("LoadResult");
+        string stock_name = loadResult.GetComponent<LoadResult>().GetStockName();
+        loadResult.GetComponent<LoadResult>().DestroySelf();
+
         // 오늘 날짜 구하기
         System.DateTime today = System.DateTime.Today;
         // 29일 전 날짜 구하기

@@ -10,20 +10,26 @@ public class LoadResult : MonoBehaviour
     private void Start()
     {
         // 이 스크립트가 붙어있는 게임오브젝트의 부모를 DontDestroyOnLoad로 설정
-        DontDestroyOnLoad(gameObject);
+        DontDestroyOnLoad(transform.root.gameObject);
     }
 
     public void OnClickLoadResult()
     {
+        // 씬 전환 전에 미리 stock_name 저장
         stock_name = dropdown.options[dropdown.value].text;
-        SceneManager.LoadScene("ResultScene");  // ResultScene으로 이동
+        // dropdown 참조 제거
+        dropdown = null;
+        SceneManager.LoadScene("ResultScene");
     }
 
     public string GetStockName()
     {
-        string tempStockName = stock_name;
-        Destroy(gameObject);  // 부모 오브젝트를 파괴
-        return tempStockName;
+        print(stock_name);
+        return stock_name;
+    }
+    public void DestroySelf()
+    {
+        Destroy(gameObject);
     }
     
 }

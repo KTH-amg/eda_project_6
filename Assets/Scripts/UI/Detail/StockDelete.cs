@@ -41,6 +41,11 @@ public class StockDelete : MonoBehaviour
     private void DeleteSelectedStocks()
     {
         List<string> stocksToDelete = scrollManager.GetSelectedStocks();
+        if (stocksToDelete.Count == 0)
+        {
+            deleteButton.GetComponentInChildren<TextMeshProUGUI>().text = "종목 삭제";
+            return;
+        }
         foreach (string stock in stocksToDelete)
         {
             if (User.Instance != null)
