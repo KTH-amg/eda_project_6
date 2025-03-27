@@ -4,6 +4,7 @@ using stockinfo;
 using stockdetail;
 using System.Linq;
 using TMPro;
+using System;
 
 
 public class StockDataManager : MonoBehaviour
@@ -13,6 +14,7 @@ public class StockDataManager : MonoBehaviour
     async void Start()
     {
         drawGraph = FindFirstObjectByType<DrawGraph>();
+        string stock_name = GameObject.Find("LoadResult").GetComponent<LoadResult>().GetStockName();
         // 오늘 날짜 구하기
         System.DateTime today = System.DateTime.Today;
         // 29일 전 날짜 구하기
@@ -20,7 +22,7 @@ public class StockDataManager : MonoBehaviour
         string today_str = today.ToString("yyyyMMdd");
         string startDate_str = startDate.ToString("yyyyMMdd");
         StockInfo stockInfo = new StockInfo(startDate_str, today_str);
-        List<StockDetail> stock_data_arr = await stockInfo.get_stock_info("삼성전자");
+        List<StockDetail> stock_data_arr = await stockInfo.get_stock_info(stock_name);
 
         List<float> dataValues = new List<float>();
         List<string> dataLabels = new List<string>();
@@ -28,7 +30,10 @@ public class StockDataManager : MonoBehaviour
         foreach (StockDetail stock in stock_data_arr)
         {
             dataValues.Add(stock.closing_price);
-            dataLabels.Add(stock.day.Substring(5, 5));
+            string dateStr = stock.day.ToString();
+            DateTime date = DateTime.ParseExact(dateStr, "yyyyMMdd", null);
+            string formattedDate = date.ToString("MM-dd");
+            dataLabels.Add(formattedDate);
         }
 
         drawGraph.SetStockData(dataValues, dataLabels);

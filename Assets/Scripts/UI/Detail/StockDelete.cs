@@ -49,5 +49,6 @@ public class StockDelete : MonoBehaviour
             }
         }
         scrollManager.RefreshAfterDeletion();
+        deleteButton.GetComponentInChildren<TextMeshProUGUI>().text = "종목 삭제";
     }
 }
