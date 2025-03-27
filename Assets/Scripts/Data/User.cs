@@ -99,7 +99,7 @@ namespace user
                 }
             }
 
-            int error = Convert.ToInt32(dbManager.delete("holding_stock", $"(user_id='{user_id} AND std_code='{std}')"));
+            int error = Convert.ToInt32(dbManager.delete("holding_stock", $"(user_id='{user_id}' AND std_code='{std}')"));
             
             if (error == 0)
             {
