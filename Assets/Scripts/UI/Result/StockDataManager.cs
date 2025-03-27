@@ -7,8 +7,7 @@ using TMPro;
 
 
 public class StockDataManager : MonoBehaviour
-{
-    private DrawGraph drawGraph;
+{private DrawGraph drawGraph;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     async void Start()
