@@ -6,7 +6,7 @@ namespace stockdetail
     using System.Net.Http;
     using System.Text;
     using System.Threading.Tasks;
-using System.Data;
+    using System.Data;
 
 public class StockDetail
 {

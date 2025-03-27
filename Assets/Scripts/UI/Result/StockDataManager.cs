@@ -17,8 +17,8 @@ public class StockDataManager : MonoBehaviour
         System.DateTime today = System.DateTime.Today;
         // 29일 전 날짜 구하기
         System.DateTime startDate = today.AddDays(-13);
-        string today_str = today.ToString("yyyy-MM-dd");
-        string startDate_str = startDate.ToString("yyyy-MM-dd");
+        string today_str = today.ToString("yyyyMMdd");
+        string startDate_str = startDate.ToString("yyyyMMdd");
         StockInfo stockInfo = new StockInfo(startDate_str, today_str);
         List<StockDetail> stock_data_arr = await stockInfo.get_stock_info("삼성전자");
 
@@ -39,11 +39,41 @@ public class StockDataManager : MonoBehaviour
             sum += stock.closing_price;
         }
 
-        GameObject.Find("cur_price").GetComponent<TextMeshProUGUI>().text = stock_data_arr[stock_data_arr.Count - 1].closing_price.ToString();
-        GameObject.Find("avg_price").GetComponent<TextMeshProUGUI>().text = (sum / stock_data_arr.Count).ToString();
-        GameObject.Find("max_price").GetComponent<TextMeshProUGUI>().text = stock_data_arr.Max(stock => stock.closing_price).ToString();
-        GameObject.Find("min_price").GetComponent<TextMeshProUGUI>().text = stock_data_arr.Min(stock => stock.closing_price).ToString();
-        GameObject.Find("fluc_rate").GetComponent<TextMeshProUGUI>().text = stock_data_arr[stock_data_arr.Count - 1].fluctuation_rate.ToString();
+        // 최대 종가 찾기
+        int maxIndex = 0;
+        int minIndex = 0;
+        int maxPrice = stock_data_arr[0].closing_price;
+        int minPrice = stock_data_arr[0].closing_price;
+
+        for (int i = 1; i < stock_data_arr.Count; i++)
+        {
+            if (stock_data_arr[i].closing_price > maxPrice)
+            {
+                maxPrice = stock_data_arr[i].closing_price;
+                maxIndex = i;
+            }
+
+            if (stock_data_arr[i].closing_price < minPrice)
+            {
+                minPrice = stock_data_arr[i].closing_price;
+                minIndex = i;
+            }
+        }
+
+        GameObject.Find("cur_price_data").GetComponent<TextMeshProUGUI>().text = stock_data_arr[stock_data_arr.Count - 1].closing_price.ToString();
+        GameObject.Find("cur_price_cont").GetComponent<TextMeshProUGUI>().text = stock_data_arr[stock_data_arr.Count - 1].contrast.ToString();
+
+        GameObject.Find("avg_price_data").GetComponent<TextMeshProUGUI>().text = (sum / stock_data_arr.Count).ToString();
+
+        GameObject.Find("max_price_data").GetComponent<TextMeshProUGUI>().text = maxPrice.ToString();
+        GameObject.Find("max_price_cont").GetComponent<TextMeshProUGUI>().text = stock_data_arr[maxIndex].day;
+
+        GameObject.Find("min_price_data").GetComponent<TextMeshProUGUI>().text = minPrice.ToString();
+        GameObject.Find("min_price_cont").GetComponent<TextMeshProUGUI>().text = stock_data_arr[minIndex].day;
+
+        GameObject.Find("fluc_rate_data").GetComponent<TextMeshProUGUI>().text = stock_data_arr[stock_data_arr.Count - 1].fluctuation_rate.ToString();
+
+        GameObject.Find("total_share_data").GetComponent<TextMeshProUGUI>().text = stock_data_arr[stock_data_arr.Count - 1].num_of_sh.ToString();
         //GameObject.Find("prediction").GetComponent<TextMeshProUGUI>().text = stock_data_arr[stock_data_arr.Count - 1].prediction.ToString();
     }
 }

@@ -74,6 +74,7 @@ public class StockInfo : MonoBehaviour
         Debug.Log(std_code);
         Debug.Log(abbr);
 
+        /*
         // 종목 주가 정보 수집
         using (var price_reader = dbManager.select(
             "stock_price_per_date p", "*", $"s.stock_name='{stock_name}' AND (p.day BETWEEN '{strtDd}' AND '{endDd}')", "stock s", "p.std_code=s.std_code"))
@@ -106,8 +107,9 @@ public class StockInfo : MonoBehaviour
                 }
             }
         }
+        */
 
-        // 종목의 현재가 수집
+        // 종목 주가 정보 수집
         // generate 헤더 요청 URL
         string url_price = "http://data.krx.co.kr/comm/fileDn/GenerateOTP/generate.cmd";
         string day = DateTime.Now.ToString("yyyyMMdd");
@@ -121,8 +123,8 @@ public class StockInfo : MonoBehaviour
             { "isuCd2", "KR7005930003" },
             { "codeNmisuCd_finder_stkisu0_1", stock_name },
             { "param1isuCd_finder_stkisu0_1", "ALL"},
-            { "strtDd", day },
-            { "endDd", day },
+            { "strtDd", strtDd },
+            { "endDd", endDd },
             { "adjStkPrc_check", "Y"},
             { "adjStkPrc", "2" },
             { "share", "1" },
@@ -194,7 +196,7 @@ public class StockInfo : MonoBehaviour
                 try 
                 {
                     cur_price = Convert.ToInt32(indv_reader["종가"]);
-                    Debug.Log($"종가 값: {cur_price}");
+                    //Debug.Log($"종가 값: {cur_price}");
                     stock_data_arr.Add(new StockDetail(
                         stock_name, std_code, day, cur_price, abbr, 
                         Convert.ToInt32(indv_reader["대비"]), Convert.ToSingle(indv_reader["등락률"]),
@@ -209,8 +211,7 @@ public class StockInfo : MonoBehaviour
                 }
             }
         }
-
-        Debug.Log(cur_price);
+        
         return stock_data_arr;
     }
     
