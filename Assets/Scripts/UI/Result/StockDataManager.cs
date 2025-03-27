@@ -2,10 +2,13 @@ using UnityEngine;
 using System.Collections.Generic;
 using stockinfo;
 using stockdetail;
+using System.Linq;
+using TMPro;
+
 
 public class StockDataManager : MonoBehaviour
 {
-    [SerializeField] private DrawGraph drawGraph;
+    private DrawGraph drawGraph;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     async void Start()
@@ -31,5 +34,17 @@ public class StockDataManager : MonoBehaviour
 
         drawGraph.SetStockData(dataValues, dataLabels);
 
+        int sum = 0;
+        foreach (StockDetail stock in stock_data_arr)
+        {
+            sum += stock.closing_price;
+        }
+
+        GameObject.Find("cur_price").GetComponent<TextMeshProUGUI>().text = stock_data_arr[stock_data_arr.Count - 1].closing_price.ToString();
+        GameObject.Find("avg_price").GetComponent<TextMeshProUGUI>().text = (sum / stock_data_arr.Count).ToString();
+        GameObject.Find("max_price").GetComponent<TextMeshProUGUI>().text = stock_data_arr.Max(stock => stock.closing_price).ToString();
+        GameObject.Find("min_price").GetComponent<TextMeshProUGUI>().text = stock_data_arr.Min(stock => stock.closing_price).ToString();
+        GameObject.Find("fluc_rate").GetComponent<TextMeshProUGUI>().text = stock_data_arr[stock_data_arr.Count - 1].fluctuation_rate.ToString();
+        //GameObject.Find("prediction").GetComponent<TextMeshProUGUI>().text = stock_data_arr[stock_data_arr.Count - 1].prediction.ToString();
     }
 }
