@@ -70,7 +70,7 @@ public class ScrollManager : MonoBehaviour
 
     private async Task SetStockItemData(GameObject stockItem, string stockName)
     {
-        string today = DateTime.Now.ToString("yyyyMMdd");
+        string today = DateTime.Now.AddDays(-1).ToString("yyyyMMdd");
         StockInfo stockInfo = new StockInfo(today, today);
         List<StockDetail> stock_data_arr = await stockInfo.get_stock_info(stockName);
 
