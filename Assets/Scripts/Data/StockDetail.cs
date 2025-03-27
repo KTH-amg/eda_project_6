@@ -1,10 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using System.Data;
+namespace stockdetail
+{
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Net.Http;
+    using System.Text;
+    using System.Threading.Tasks;
+    using System.Data;
 
 public class StockDetail
 {
@@ -42,4 +44,5 @@ public class StockDetail
         cpt = cp;
         num_of_sh = ns;
     }
+}
 }

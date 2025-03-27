@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System;
+using user;
 
 public class TabManager : MonoBehaviour
 {
@@ -8,6 +10,10 @@ public class TabManager : MonoBehaviour
     [SerializeField] private GameObject dashboardComponent;
     [SerializeField] private GameObject selectComponent;
     [SerializeField] private GameObject mystockComponent;
+    [SerializeField] private GameObject addStockPopup; // 종목 추가 팝업 UI
+    [SerializeField] private TMP_Dropdown stockDropdown; // 종목 선택 드롭다운
+    [SerializeField] private TMP_InputField purchasePriceInput; // 매수가 입력 필드
+    [SerializeField] private TMP_InputField numOfStockInput;    // 주식 수량 입력 필드
 
     private Vector3[] tabPositions = new Vector3[]
     {
@@ -19,6 +25,10 @@ public class TabManager : MonoBehaviour
     // 선택된/선택되지 않은 텍스트 색상
     private Color selectedColor = new Color32(0x64, 0xFF, 0xDA, 0xFF); // 0x80은 255의 50%인 128
     private Color unselectedColor = new Color(0.5f, 0.5f, 0.5f); // 회색
+
+    // 종목 추가 이벤트를 위한 델리게이트와 이벤트 선언
+    public delegate void StockAddedEventHandler(string stockName, int purchasePrice, int numOfStock);
+    public static event StockAddedEventHandler OnStockAdded;
 
     void Start()
     {
@@ -107,6 +117,52 @@ public class TabManager : MonoBehaviour
         if (onPickedEffect != null)
         {
             onPickedEffect.GetComponent<RectTransform>().anchoredPosition = tabPositions[tabIndex];
+        }
+    }
+
+    // 팝업 활성화
+    public void OnClickAddButton()
+    {
+        if (addStockPopup != null)
+        {
+            addStockPopup.SetActive(true);
+        }
+        else
+        {
+            Debug.LogWarning("Add Stock Popup is not assigned!");
+        }
+    }
+
+    // 팝업 비활성화
+    public void OnClickClosePopup()
+    {
+        if (addStockPopup != null)
+        {
+            addStockPopup.SetActive(false);
+        }
+    }
+
+    public void OnClickAddStock()
+    {
+        if (User.Instance == null)
+        {
+            Debug.LogWarning("User instance is not initialized!");
+            return;
+        }
+
+        if (addStockPopup != null && stockDropdown != null)
+        {
+            string selectedStock = stockDropdown.options[stockDropdown.value].text;
+            int purchasePrice = Convert.ToInt32(purchasePriceInput.text);
+            int numOfStock = Convert.ToInt32(numOfStockInput.text);
+            
+            Debug.Log($"Selected stock: {selectedStock}, Purchase price: {purchasePrice}, Number of stocks: {numOfStock}");
+            User.Instance.setStock(selectedStock, purchasePrice, numOfStock);
+            
+            // 이벤트 호출 시 모든 정보 전달
+            OnStockAdded?.Invoke(selectedStock, purchasePrice, numOfStock);
+            
+            OnClickClosePopup();
         }
     }
 }

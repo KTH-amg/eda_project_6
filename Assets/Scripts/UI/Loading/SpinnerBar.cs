@@ -10,7 +10,7 @@ public class SpinnerBar : MonoBehaviour
     void Start()
     {
         // RectBar의 OnComplete 이벤트에 StopSpinning 메서드를 연결
-        var ProgressBar = FindObjectOfType<ProgressBar>();
+        var ProgressBar = FindFirstObjectByType<ProgressBar>();
         if (ProgressBar != null)
         {
             ProgressBar.OnComplete += StopSpinning;
