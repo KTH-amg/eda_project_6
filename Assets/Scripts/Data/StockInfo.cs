@@ -210,10 +210,11 @@ public class StockInfo : MonoBehaviour
         return stock_data_arr;
     }
     
-    void predict_stock_info(int inquiry_period)
+    List<int> predict_stock_info(string std_code)
     {
         //날짜에 따른 예측 및 예측치 저장
-
+        predicted_price = tcpManager.CommunicateWithServer(std_code);
+        return predicted_price;
     }
 }
 }
