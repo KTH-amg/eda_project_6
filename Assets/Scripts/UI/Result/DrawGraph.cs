@@ -34,6 +34,10 @@ public class DrawGraph : MonoBehaviour
     [Header("Graph Padding")]
     [SerializeField] private float yAxisPaddingPercentage = 20f; // Y축 상하 여백 비율(%)
     
+    [Header("Line Colors")]
+    [SerializeField] private Color actualLineColor = new Color(0.3f, 0.85f, 0.4f); // 기존 데이터 색상
+    [SerializeField] private Color predictionLineColor = new Color(0.85f, 0.3f, 0.3f); // 예측 데이터 색상
+    
     private List<GameObject> points = new List<GameObject>();
     private List<GameObject> lines = new List<GameObject>();
     private GameObject background;
@@ -43,12 +47,6 @@ public class DrawGraph : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        // 테스트용 데이터 추가 (실제 사용 시 이 부분 제거)
-        if (dataValues.Count == 0)
-        {
-            dataValues = new List<float> { 71300, 71900, 72400, 73200, 74100, 75400, 76200, 75400 };
-            dataLabels = new List<string> { "01-28", "01-29", "01-30", "02-01", "02-03", "02-05", "02-07", "02-09" };
-        }
         
         // 그래프 생성
         CreateGraph();
@@ -56,6 +54,11 @@ public class DrawGraph : MonoBehaviour
 
     public void CreateGraph()
     {
+        if(dataValues.Count == 0)
+        {
+            Debug.Log("dataValues is empty");
+            return;
+        }
         ClearGraph();
         CreateBackground();
         
@@ -189,19 +192,24 @@ public class DrawGraph : MonoBehaviour
         
         // 데이터 포인트와 라인 생성
         Vector2 lastPointPosition = Vector2.zero;
+        int predictionStartIndex = dataValues.Count - 30; // 뒤의 30개 데이터는 예측값
+
         for (int i = 0; i < dataValues.Count; i++)
         {
             float yPosition = yAxisMargin + ((dataValues[i] - minValue) / range) * plotHeight;
             Vector2 pointPosition = new Vector2(xPositions[i], yPosition);
             
-            // 데이터 포인트 생성
-            GameObject pointObject = CreatePoint(pointPosition);
+            // 데이터 포인트 생성 (예측 데이터는 다른 색상 사용)
+            Color pointColor = i >= predictionStartIndex ? predictionLineColor : actualLineColor;
+            GameObject pointObject = CreatePoint(pointPosition, pointColor);
             points.Add(pointObject);
             
             // 라인 생성 (첫 포인트 제외)
             if (i > 0)
             {
-                GameObject lineObject = CreateLine(lastPointPosition, pointPosition);
+                // 현재 포인트가 예측 데이터의 시작점이면 이전 데이터와 연결하는 선도 예측 색상으로
+                Color lineColor = i >= predictionStartIndex ? predictionLineColor : actualLineColor;
+                GameObject lineObject = CreateLine(lastPointPosition, pointPosition, lineColor);
                 lines.Add(lineObject);
             }
             
@@ -223,7 +231,7 @@ public class DrawGraph : MonoBehaviour
         image.color = backgroundColor;
     }
     
-    private GameObject CreatePoint(Vector2 position)
+    private GameObject CreatePoint(Vector2 position, Color color)
     {
         GameObject pointObject = new GameObject("Point");
         pointObject.transform.SetParent(graphContainer, false);
@@ -236,12 +244,12 @@ public class DrawGraph : MonoBehaviour
         
         Image image = pointObject.AddComponent<Image>();
         image.sprite = circleSprite;
-        image.color = lineColor;
+        image.color = color;
         
         return pointObject;
     }
     
-    private GameObject CreateLine(Vector2 startPosition, Vector2 endPosition)
+    private GameObject CreateLine(Vector2 startPosition, Vector2 endPosition, Color color)
     {
         GameObject lineObject = new GameObject("Line");
         lineObject.transform.SetParent(graphContainer, false);
@@ -261,7 +269,7 @@ public class DrawGraph : MonoBehaviour
         rectTransform.localEulerAngles = new Vector3(0, 0, angle);
         
         Image image = lineObject.AddComponent<Image>();
-        image.color = lineColor;
+        image.color = color;
         
         return lineObject;
     }
