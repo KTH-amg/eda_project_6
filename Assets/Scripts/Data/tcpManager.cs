@@ -13,7 +13,7 @@ public class tcpManager : MonoBehaviour
     private const int serverPort = 8080;
 
     static tcpManager() {}
-    public static List<int> CommunicateWithServer(string message)
+    public static Tuple<float[], string> CommunicateWithServer(string message)
     {
         try
         {
@@ -31,30 +31,37 @@ public class tcpManager : MonoBehaviour
             writer.Flush();
             Debug.Log("서버로 문자열 전송 완료: " + message);
 
-            Thread.Sleep(3000);
+            Thread.Sleep(20000);
 
-            // 정수 리스트 수신
-            int length = reader.ReadInt32();
-            List<int> data = new List<int>(length);
+            // 리스트 길이 읽기 (4바이트)
+            int listLength = IPAddress.NetworkToHostOrder(reader.ReadInt32());
 
-            for (int i = 0; i < length; i++)
+            // float 리스트 읽기
+            float[] predList = new float[listLength];
+            for (int i = 0; i < listLength; i++)
             {
-                data.Add(reader.ReadInt32());
+                predList[i] = BitConverter.ToSingle(BitConverter.GetBytes(IPAddress.NetworkToHostOrder(reader.ReadInt32())), 0);
             }
 
-            Debug.Log("서버로부터 받은 데이터: " + string.Join(", ", data));
+            // 문자열 길이 읽기 (4바이트)
+            int riskLength = IPAddress.NetworkToHostOrder(reader.ReadInt32());
+
+            // 문자열 데이터 읽기
+            string risk_level = Encoding.UTF8.GetString(reader.ReadBytes(riskLength));
+
+            Debug.Log("서버로부터 받은 데이터: " + string.Join(", ", predList) + risk_level);
 
             writer.Close();
             reader.Close();
             stream.Close();
             client.Close();
 
-            return data;
+            return new Tuple<float[], string>(predList, risk_level);
         }
         catch (Exception e)
         {
             Debug.LogError("에러 발생: " + e.Message);
-            return new List<int>();
+            return null;
         }
     }
 }

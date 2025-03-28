@@ -26,6 +26,8 @@ public class StockDataManager : MonoBehaviour
         string startDate_str = startDate.ToString("yyyyMMdd");
         StockInfo stockInfo = new StockInfo(startDate_str, today_str);
         List<StockDetail> stock_data_arr = await stockInfo.get_stock_info(stock_name);
+        string std = stock_data_arr[0].std_code;
+        float cur_price = Convert.ToSingle(stock_data_arr[stock_data_arr.Count - 1].closing_price);
 
         List<float> dataValues = new List<float>();
         List<string> dataLabels = new List<string>();
@@ -38,6 +40,15 @@ public class StockDataManager : MonoBehaviour
             string formattedDate = date.ToString("MM-dd");
             dataLabels.Add(formattedDate);
         }
+
+        Tuple<float[], string> predict_risk = stockInfo.predict_stock_info(std);
+        float[] pred_list = predict_risk.Item1;
+        for (int i = 0; i < pred_list.Length; i++)
+        {
+            dataValues.Add(pred_list[i]);
+            dataLabels.Add($"+ {i+1}일");
+        }
+        float cur_pred = pred_list[pred_list.Length - 1];
 
         drawGraph.SetStockData(dataValues, dataLabels);
 
@@ -84,6 +95,8 @@ public class StockDataManager : MonoBehaviour
         GameObject.Find("fluc_rate_data").GetComponent<TextMeshProUGUI>().text = stock_data_arr[stock_data_arr.Count - 1].fluctuation_rate.ToString();
 
         GameObject.Find("total_share_data").GetComponent<TextMeshProUGUI>().text = stock_data_arr[stock_data_arr.Count - 1].num_of_sh.ToString();
-        //GameObject.Find("prediction").GetComponent<TextMeshProUGUI>().text = stock_data_arr[stock_data_arr.Count - 1].prediction.ToString();
+        GameObject.Find("risk_data").GetComponent<TextMeshProUGUI>().text = predict_risk.Item2;
+        GameObject.Find("pred_data").GetComponent<TextMeshProUGUI>().text = cur_pred.ToString();
+        GameObject.Find("pred_cont").GetComponent<TextMeshProUGUI>().text = (cur_pred - cur_price).ToString();
     }
 }

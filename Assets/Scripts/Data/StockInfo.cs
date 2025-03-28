@@ -18,15 +18,14 @@ public class StockInfo : MonoBehaviour
     private List<StockDetail> stock_data_arr;
     private string strtDd;
     private string endDd;
-    private float risk;
-    private List<int> predicted_price;
+    private string risk;
+    private Tuple<float[], string> pred_risk;
 
     public StockInfo(string start, string end)
     {
         stock_data_arr = new List<StockDetail>();
         strtDd = start;
         endDd = end;
-        predicted_price = new List<int>();
     }
 
     public DataTable ConvertCsvToTable(string csvData)
@@ -210,11 +209,11 @@ public class StockInfo : MonoBehaviour
         return stock_data_arr;
     }
     
-    List<int> predict_stock_info(string std_code)
+    public Tuple<float[], string> predict_stock_info(string std_code)
     {
         //날짜에 따른 예측 및 예측치 저장
-        predicted_price = tcpManager.CommunicateWithServer(std_code);
-        return predicted_price;
+        pred_risk = tcpManager.CommunicateWithServer(std_code);
+        return pred_risk;
     }
 }
 }
