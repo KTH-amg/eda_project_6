@@ -6,14 +6,20 @@ using user;
 
 public class TabManager : MonoBehaviour
 {
-    [SerializeField] public GameObject onPickedEffect; // 선택 효과
+    [Header("Tab Components")]
+    [SerializeField] private GameObject onPickedEffect; // 선택 효과
     [SerializeField] private GameObject dashboardComponent;
     [SerializeField] private GameObject selectComponent;
     [SerializeField] private GameObject mystockComponent;
+    
+    [Header("UI References")]
     [SerializeField] private GameObject addStockPopup; // 종목 추가 팝업 UI
     [SerializeField] private TMP_Dropdown stockDropdown; // 종목 선택 드롭다운
     [SerializeField] private TMP_InputField purchasePriceInput; // 매수가 입력 필드
     [SerializeField] private TMP_InputField numOfStockInput;    // 주식 수량 입력 필드
+    [SerializeField] private TextMeshProUGUI dashboardText;
+    [SerializeField] private TextMeshProUGUI selectText;
+    [SerializeField] private TextMeshProUGUI mystockText;
 
     private Vector3[] tabPositions = new Vector3[]
     {
@@ -29,6 +35,19 @@ public class TabManager : MonoBehaviour
     // 종목 추가 이벤트를 위한 델리게이트와 이벤트 선언
     public delegate void StockAddedEventHandler(string stockName, int purchasePrice, int numOfStock);
     public static event StockAddedEventHandler OnStockAdded;
+
+    private void Awake()
+    {
+        ValidateReferences();
+    }
+
+    private void ValidateReferences()
+    {
+        if (dashboardComponent == null) Debug.LogError("Dashboard Component is missing!");
+        if (selectComponent == null) Debug.LogError("Select Component is missing!");
+        if (mystockComponent == null) Debug.LogError("Mystock Component is missing!");
+        // ... 다른 컴포넌트들도 검증
+    }
 
     void Start()
     {
@@ -49,39 +68,23 @@ public class TabManager : MonoBehaviour
 
     private void SetTabTextColors(int selectedTab)
     {
-        try 
+        if (dashboardText == null || selectText == null || mystockText == null)
         {
-            var dashboardText = GameObject.Find("dashboard_txt");
-            var selectText = GameObject.Find("select_txt");
-            var mystockText = GameObject.Find("mystock_txt");
-
-            var dashboardTMP = dashboardText.GetComponent<TMP_Text>();
-            var selectTMP = selectText.GetComponent<TMP_Text>();
-            var mystockTMP = mystockText.GetComponent<TMP_Text>();
-
-            // 모든 텍스트를 60% 불투명도의 흰색으로 초기화 (alpha: 153)
-            Color defaultColor = new Color32(255, 255, 255, 153);
-            dashboardTMP.color = defaultColor;
-            selectTMP.color = defaultColor;
-            mystockTMP.color = defaultColor;
-
-            // 선택된 탭의 텍스트만 색상 변경
-            switch(selectedTab)
-            {
-                case 0:
-                    dashboardTMP.color = selectedColor;
-                    break;
-                case 1:
-                    selectTMP.color = selectedColor;
-                    break;
-                case 2:
-                    mystockTMP.color = selectedColor;
-                    break;
-            }
+            Debug.LogError("Some text components are missing!");
+            return;
         }
-        catch (System.Exception e)
+
+        // 모든 텍스트를 기본 색상으로 초기화
+        dashboardText.color = unselectedColor;
+        selectText.color = unselectedColor;
+        mystockText.color = unselectedColor;
+
+        // 선택된 탭만 색상 변경
+        switch(selectedTab)
         {
-            Debug.LogError($"Error in SetTabTextColors: {e.Message}");
+            case 0: dashboardText.color = selectedColor; break;
+            case 1: selectText.color = selectedColor; break;
+            case 2: mystockText.color = selectedColor; break;
         }
     }
 
@@ -144,25 +147,50 @@ public class TabManager : MonoBehaviour
 
     public void OnClickAddStock()
     {
-        if (User.Instance == null)
-        {
-            Debug.LogWarning("User instance is not initialized!");
-            return;
-        }
+        if (!ValidateAddStockInputs()) return;
 
-        if (addStockPopup != null && stockDropdown != null)
+        try
         {
             string selectedStock = stockDropdown.options[stockDropdown.value].text;
-            int purchasePrice = Convert.ToInt32(purchasePriceInput.text);
-            int numOfStock = Convert.ToInt32(numOfStockInput.text);
-            
-            Debug.Log($"Selected stock: {selectedStock}, Purchase price: {purchasePrice}, Number of stocks: {numOfStock}");
-            User.Instance.setStock(selectedStock, purchasePrice, numOfStock);
-            
-            // 이벤트 호출 시 모든 정보 전달
+            if (!int.TryParse(purchasePriceInput.text, out int purchasePrice))
+            {
+                Debug.LogError("Invalid purchase price input");
+                return;
+            }
+            if (!int.TryParse(numOfStockInput.text, out int numOfStock))
+            {
+                Debug.LogError("Invalid number of stocks input");
+                return;
+            }
+
+            User.Instance?.setStock(selectedStock, purchasePrice, numOfStock);
             OnStockAdded?.Invoke(selectedStock, purchasePrice, numOfStock);
-            
             OnClickClosePopup();
         }
+        catch (Exception e)
+        {
+            Debug.LogError($"Error adding stock: {e.Message}");
+        }
+    }
+
+    private bool ValidateAddStockInputs()
+    {
+        if (addStockPopup == null || stockDropdown == null)
+        {
+            Debug.LogError("Add stock popup or dropdown is missing");
+            return false;
+        }
+        if (purchasePriceInput == null || numOfStockInput == null)
+        {
+            Debug.LogError("Price or number input field is missing");
+            return false;
+        }
+        if (string.IsNullOrEmpty(purchasePriceInput.text) || 
+            string.IsNullOrEmpty(numOfStockInput.text))
+        {
+            Debug.LogError("Price or number input is empty");
+            return false;
+        }
+        return true;
     }
 }

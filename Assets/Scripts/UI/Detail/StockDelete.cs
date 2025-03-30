@@ -56,4 +56,19 @@ public class StockDelete : MonoBehaviour
         scrollManager.RefreshAfterDeletion();
         deleteButton.GetComponentInChildren<TextMeshProUGUI>().text = "종목 삭제";
     }
+
+    private void SetTabTextColors(int selectedTab)
+    {
+        try 
+        {
+            var dashboardText = GameObject.Find("dashboard_txt");
+            var selectText = GameObject.Find("select_txt");
+            var mystockText = GameObject.Find("mystock_txt");
+            // ...
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Error setting tab text colors: " + ex.Message);
+        }
+    }
 }

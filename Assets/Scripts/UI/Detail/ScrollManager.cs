@@ -7,6 +7,8 @@ using stockinfo;
 using System;
 using stockdetail;
 using System.Threading.Tasks;
+using System.Linq;
+
 public class ScrollManager : MonoBehaviour
 {
     [SerializeField] private ScrollRect scrollRect;     // 스크롤뷰 컴포넌트
@@ -19,6 +21,7 @@ public class ScrollManager : MonoBehaviour
     private const int MAX_ITEMS_PER_GROUP = 2;         // 그룹당 최대 아이템 수
     private List<User.HoldingStockInfo> holdingStocks;
     private List<Toggle> stockToggles = new List<Toggle>();
+    private List<StockItemView> stockViews = new List<StockItemView>();
 
     // 각 종목의 매수가와 수량을 저장할 구조체 정의
     private class StockPurchaseInfo
@@ -32,28 +35,7 @@ public class ScrollManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     private async void Start()
     {
-        if (User.Instance != null)
-        {
-            holdingStocks = User.Instance.getStock();
-            if(holdingStocks != null && holdingStocks.Count > 0)
-            {
-                // 보유 주식 정보를 딕셔너리에 저장
-                foreach (var stockInfo in holdingStocks)
-                {
-                    stockPurchaseInfos[stockInfo.StockName] = new StockPurchaseInfo 
-                    { 
-                        PurchasePrice = stockInfo.PurchasePrice,
-                        NumberOfStocks = stockInfo.NumberOfStocks
-                    };
-                }
-                
-                // 각 주식에 대해 아이템 생성
-                for (int i = 0; i < holdingStocks.Count; i++)
-                {
-                    await AddNewItem();
-                }
-            }
-        }
+        await InitializeStockList();
     }
 
     // Update is called once per frame
@@ -143,54 +125,50 @@ public class ScrollManager : MonoBehaviour
 
     private void CreateNewGroup()
     {
-        // 스크롤뷰의 content 트랜스폼을 부모로 새 그룹 생성
+        if (scrollRect == null || groupPrefab == null)
+        {
+            Debug.LogError("Required components are missing!");
+            return;
+        }
+        
         currentGroup = Instantiate(groupPrefab, scrollRect.content);
         itemsInCurrentGroup = 0;
     }
 
     private void OnEnable()
     {
-        TabManager.OnStockAdded += RefreshStockList;
+        TabManager.OnStockAdded += HandleStockAdded;
     }
 
     private void OnDisable()
     {
-        TabManager.OnStockAdded -= RefreshStockList;
+        TabManager.OnStockAdded -= HandleStockAdded;
     }
 
-    private async void RefreshStockList(string newStock, int purchasePrice, int numOfStock)
+    private async void HandleStockAdded(string newStock, int purchasePrice, int numOfStock)
     {
-        // 매수 정보 저장
-        stockPurchaseInfos[newStock] = new StockPurchaseInfo 
-        { 
-            PurchasePrice = purchasePrice,
-            NumberOfStocks = numOfStock
-        };
+        await RefreshStockList();
+    }
 
-        // 기존 그룹과 아이템들 제거
-        foreach (Transform child in scrollRect.content)
+    private async void HandleStockUpdated()
+    {
+        await RefreshStockList();
+    }
+
+    private async Task RefreshStockList()
+    {
+        // 기존 아이템 정리
+        foreach (var view in stockViews)
         {
-            Destroy(child.gameObject);
+            if (view != null) Destroy(view.gameObject);
         }
+        stockViews.Clear();
         
-        // 변수 초기화
+        // 컨텐츠 초기화
         currentGroup = null;
         itemsInCurrentGroup = 0;
-        totalItemsAdded = 0;
-        stockToggles.Clear();
-
-        // 리스트 다시 가져오기
-        if (User.Instance != null)
-        {
-            holdingStocks = User.Instance.getStock();
-            if(holdingStocks != null && holdingStocks.Count > 0)
-            {
-                for (int i = 0; i < holdingStocks.Count; i++)
-                {
-                    await AddNewItem();
-                }
-            }
-        }
+        
+        await InitializeStockList();
     }
     
     // 체크박스 표시/숨김 토글 메서드
@@ -223,27 +201,18 @@ public class ScrollManager : MonoBehaviour
     // 삭제 후 목록 새로고침
     public async void RefreshAfterDeletion()
     {
-        foreach (Transform child in scrollRect.content)
+        foreach (var view in stockViews)
         {
-            Destroy(child.gameObject);
+            if (view != null) Destroy(view.gameObject);
         }
+        stockViews.Clear();
         
         currentGroup = null;
         itemsInCurrentGroup = 0;
         totalItemsAdded = 0;
         stockToggles.Clear();
 
-        if (User.Instance != null)
-        {
-            holdingStocks = User.Instance.getStock();
-            if(holdingStocks != null && holdingStocks.Count > 0)
-            {
-                for (int i = 0; i < holdingStocks.Count; i++)
-                {
-                    await AddNewItem();
-                }
-            }
-        }
+        await InitializeStockList();
     }
 
     private async Task<string> GetMostRecentTradingDay(string stockName)
@@ -293,4 +262,98 @@ public class ScrollManager : MonoBehaviour
         // 기본값으로 현재 날짜 반환 (모든 시도가 실패한 경우)
         return DateTime.Now.ToString("yyyyMMdd");
     }
+
+    private async Task InitializeStockList()
+    {
+        try
+        {
+            if (User.Instance == null) return;
+            
+            holdingStocks = User.Instance.getStock();
+            if(holdingStocks == null || holdingStocks.Count == 0) return;
+
+            // 모든 주식 데이터를 병렬로 가져오기
+            var tasks = holdingStocks.Select(async stock => {
+                var targetDate = await GetMostRecentTradingDay(stock.StockName);
+                var stockInfo = new StockInfo(targetDate, targetDate);
+                var stockData = await stockInfo.get_stock_info(stock.StockName);
+                return (stock, stockData);
+            });
+
+            var results = await Task.WhenAll(tasks);
+
+            // UI 업데이트는 한번에 처리
+            foreach (var (stock, stockData) in results)
+            {
+                await CreateStockItem(stock, stockData);
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to initialize stock list: {e}");
+        }
+    }
+
+    private async Task CreateStockItem(User.HoldingStockInfo stock, List<StockDetail> stockData)
+    {
+        if (currentGroup == null || itemsInCurrentGroup >= MAX_ITEMS_PER_GROUP)
+        {
+            CreateNewGroup();
+        }
+
+        GameObject newView = Instantiate(viewPrefab, currentGroup.transform);
+        await SetStockItemData(newView, stock.StockName);
+        
+        totalItemsAdded++;
+        itemsInCurrentGroup++;
+
+        StockItemView stockItemView = newView.GetComponent<StockItemView>();
+        if (stockItemView != null)
+        {
+            stockItemView.Initialize(new StockViewData
+            {
+                StockName = stock.StockName,
+                CurrentPrice = (float)stockData[0].closing_price,
+                PurchasePrice = stock.PurchasePrice,
+                FluctuationRate = (float)stockData[0].fluctuation_rate,
+                Attribute = stockData[0].abbr
+            });
+            stockViews.Add(stockItemView);
+        }
+    }
+}
+
+// 프리팹용 컴포넌트 클래스 생성
+public class StockItemView : MonoBehaviour
+{
+    [SerializeField] private TextMeshProUGUI nameText;
+    [SerializeField] private TextMeshProUGUI currentPriceText;
+    [SerializeField] private TextMeshProUGUI myPriceText;
+    [SerializeField] private TextMeshProUGUI marginText;
+    [SerializeField] private TextMeshProUGUI fluctText;
+    [SerializeField] private TextMeshProUGUI attrText;
+    [SerializeField] private Toggle selectionToggle;
+
+    public void Initialize(StockViewData data)
+    {
+        nameText.text = data.StockName;
+        currentPriceText.text = data.CurrentPrice.ToString("N0");
+        myPriceText.text = data.PurchasePrice.ToString("N0");
+        
+        float marginRate = ((data.CurrentPrice - data.PurchasePrice) / data.PurchasePrice) * 100;
+        marginText.text = $"{(marginRate >= 0 ? "+" : "")}{marginRate:F2}%";
+        marginText.color = marginRate >= 0 ? Color.red : new Color(0, 0.7f, 1f);
+        
+        // ... 나머지 UI 업데이트
+    }
+}
+
+// 데이터 구조체
+public struct StockViewData
+{
+    public string StockName;
+    public float CurrentPrice;
+    public float PurchasePrice;
+    public float FluctuationRate;
+    public string Attribute;
 }

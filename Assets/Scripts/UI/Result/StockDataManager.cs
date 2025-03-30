@@ -13,6 +13,7 @@ using System.Net;
 public class StockDataManager : MonoBehaviour
 {
     private DrawGraph drawGraph;
+    public static event Action<string> OnRiskLevelUpdated;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     async void Start()
@@ -164,16 +165,23 @@ public class StockDataManager : MonoBehaviour
     // 위험도 텍스트 변환 메서드 추가
     private string ConvertRiskLevelToKorean(string englishRisk)
     {
+        string koreanRisk;
         switch (englishRisk.ToLower())
         {
             case "high risk":
-                return "높음";
+                koreanRisk = "높음";
+                break;
             case "medium risk":
-                return "중간";
+                koreanRisk = "중간";
+                break;
             case "low risk":
-                return "낮음";
+                koreanRisk = "낮음";
+                break;
             default:
-                return englishRisk; // 알 수 없는 위험도는 원문 그대로 반환
+                koreanRisk = englishRisk; // 알 수 없는 위험도는 원문 그대로 반환
+                break;
         }
+        OnRiskLevelUpdated?.Invoke(koreanRisk);
+        return koreanRisk;
     }
 }

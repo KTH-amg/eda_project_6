@@ -15,10 +15,7 @@ public class RiskDegree : MonoBehaviour
             riskText = GameObject.Find("risk_data").GetComponent<TextMeshProUGUI>();
         }
 
-        if (progressBar != null && riskText != null)
-        {
-            SetRiskLevel(riskText.text);
-        }
+        StockDataManager.OnRiskLevelUpdated += SetRiskLevel;
     }
 
     private void SetRiskLevel(string riskLevel)
@@ -43,9 +40,8 @@ public class RiskDegree : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    void OnDestroy()
     {
-        
+        StockDataManager.OnRiskLevelUpdated -= SetRiskLevel;
     }
 }
