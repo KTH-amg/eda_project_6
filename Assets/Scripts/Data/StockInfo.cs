@@ -50,6 +50,12 @@ public class StockInfo
     
     public async Task<List<StockDetail>> get_stock_info(string stock_name)
     {
+        // EUC-KR 인코딩을 사용하기 전에 인코딩 제공자를 등록
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        
+        // 그 후에 EUC-KR 인코딩 사용
+        var encoding = Encoding.GetEncoding("euc-kr");
+        
         // 종목 표준코드, 약식코드 검색
         string std_code = "", abbr = "";
         using (var stock_reader = dbManager.select("stock", "*"))
@@ -167,7 +173,7 @@ public class StockInfo
             var downSectorResponse_indv = await client.PostAsync(downUrl_indv, downloadContent_indv);
             var stream_indv = await downSectorResponse_indv.Content.ReadAsStreamAsync();
 
-            using (var reader = new StreamReader(stream_indv, Encoding.GetEncoding("EUC-KR")))
+            using (var reader = new StreamReader(stream_indv, encoding))
             {
                 indv_data = reader.ReadToEnd();
             }
