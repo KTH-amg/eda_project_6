@@ -12,60 +12,53 @@ public class tcpManager : MonoBehaviour
 {
     private const string serverIP = "34.22.64.103";
     private const int serverPort = 8080;
-    //private TcpClient client;
-    //private NetworkStream stream;
-    //public static tcpManager _instance;
+    private static tcpManager instance;
 
-    //private tcpManager() {}
-
-    /*
-    public static tcpManager Instance
+    private void Awake()
     {
-        get
+        if (instance == null)
         {
-            if (_instance == null)
-            {
-                _instance = new tcpManager();
-            }
-            return _instance;
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
         }
     }
-    */
 
-    public static Tuple<float[], string> CommunicateWithServer(string message)
-    //public IEnumerator CommunicateWithServer(string message, Action<(float[], string)> callback)
+    public static IEnumerator CommunicateWithServerCoroutine(string message, Action<Tuple<float[], string>> callback)
     {
-        /*
-        client = new TcpClient("34.22.64.103", 8080);
-        stream = client.GetStream();
-        Debug.Log("서버 연결");
+        Tuple<float[], string> result = null;
+        TcpClient client = null;
+        NetworkStream stream = null;
+        BinaryWriter writer = null;
+        BinaryReader reader = null;
 
-        // 서버에 데이터 요청
-        byte[] requestData = Encoding.UTF8.GetBytes(message);
-        stream.Write(requestData, 0, requestData.Length);
-        Debug.Log($"서버에 데이터 요청 전송: {message}");
-
-        // **서버 응답 대기**
-        yield return Instance.StartCoroutine(WaitForServerResponse(callback));
-        */
         try
         {
-            TcpClient client = new TcpClient(serverIP, serverPort);
-            NetworkStream stream = client.GetStream();
-            BinaryWriter writer = new BinaryWriter(stream);
-            BinaryReader reader = new BinaryReader(stream);
+            client = new TcpClient(serverIP, serverPort);
+            stream = client.GetStream();
+            writer = new BinaryWriter(stream);
+            reader = new BinaryReader(stream);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("연결 실패: " + e.Message);
+            callback(null);
+            yield break;
+        }
 
-            // 전송할 문자열 정의
+        yield return new WaitForEndOfFrame();
+
+        // 데이터 송수신 로직
+        try 
+        {
             byte[] messageBytes = Encoding.UTF8.GetBytes(message);
-
-            // 문자열 길이(4바이트) + 문자열 데이터 전송
             writer.Write(IPAddress.HostToNetworkOrder(messageBytes.Length));
             writer.Write(messageBytes);
             writer.Flush();
             Debug.Log("서버로 문자열 전송 완료: " + message);
-
-            Thread.Sleep(10000);
-            // yield retrun
 
             // 리스트 길이 읽기 (4바이트)
             int listLength = IPAddress.NetworkToHostOrder(reader.ReadInt32());
@@ -84,19 +77,22 @@ public class tcpManager : MonoBehaviour
             string risk_level = Encoding.UTF8.GetString(reader.ReadBytes(riskLength));
 
             Debug.Log("서버로부터 받은 데이터: " + string.Join(", ", predList) + risk_level);
-
-            writer.Close();
-            reader.Close();
-            stream.Close();
-            client.Close();
-
-            return new Tuple<float[], string>(predList, risk_level);
+            result = new Tuple<float[], string>(predList, risk_level);
         }
         catch (Exception e)
         {
-            Debug.LogError("에러 발생: " + e.Message);
-            return null;
+            Debug.LogError("데이터 송수신 실패: " + e.Message);
+            result = null;
         }
+        finally
+        {
+            writer?.Close();
+            reader?.Close();
+            stream?.Close();
+            client?.Close();
+        }
+
+        callback(result);
     }
     /*
     IEnumerator WaitForServerResponse(Action<(float[], string)> callback)

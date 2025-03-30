@@ -13,7 +13,8 @@ using System.Linq;
 using System.Globalization;
 using stockdetail;
 using UnityEngine;
-public class StockInfo : MonoBehaviour
+
+public class StockInfo
 {
     private List<StockDetail> stock_data_arr;
     private string strtDd;
@@ -209,11 +210,13 @@ public class StockInfo : MonoBehaviour
         return stock_data_arr;
     }
     
-    public Tuple<float[], string> predict_stock_info(string std_code)
+    public void predict_stock_info(string std_code, Action<Tuple<float[], string>> callback)
     {
-        //날짜에 따른 예측 및 예측치 저장
-        pred_risk = tcpManager.CommunicateWithServer(std_code);
-        return pred_risk;
+        MonoBehaviour mono = GameObject.FindFirstObjectByType<MonoBehaviour>();
+        mono.StartCoroutine(tcpManager.CommunicateWithServerCoroutine(std_code, result => {
+            pred_risk = result;
+            callback(result);
+        }));
     }
 }
 }
