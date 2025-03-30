@@ -2902,7 +2902,8 @@ GameObject:
   - component: {fileID: 1363328349}
   - component: {fileID: 1363328352}
   - component: {fileID: 1363328351}
-  - component: {fileID: 1363328350}
+  - component: {fileID: 1363328353}
+  - component: {fileID: 1363328354}
   m_Layer: 5
   m_Name: FillBar
   m_TagString: Untagged
@@ -2929,19 +2930,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 305.8523, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1363328350
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1363328348}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4463e60b3f702de439e47522c15a9223, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  fillSpeed: 0.175
 --- !u!114 &1363328351
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2962,7 +2950,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 2534188118475996895, guid: 34b1a185fa335b44996d225f1858137d, type: 3}
   m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2980,6 +2968,34 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1363328348}
   m_CullTransparentMesh: 1
+--- !u!114 &1363328353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1363328348}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75e63c2e2e8b56b4e9d528e4d9928be2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  progressBar: {fileID: 1363328351}
+  riskText: {fileID: 691280256}
+--- !u!114 &1363328354
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1363328348}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a50a33d21fe264a43af121bd4346eaf8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gradientStart: {r: 1, g: 1, b: 1, a: 1}
+  gradientEnd: {r: 1, g: 1, b: 1, a: 0}
 --- !u!1 &1382839522
 GameObject:
   m_ObjectHideFlags: 0
