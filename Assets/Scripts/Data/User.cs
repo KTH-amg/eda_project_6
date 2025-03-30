@@ -125,28 +125,39 @@ namespace user
             return user_name;
         }
 
-        public List<string> getStock()
+        public class HoldingStockInfo
         {
-            holding_stock.Clear(); // 기존 리스트 초기화
+            public string StockName { get; set; }
+            public int PurchasePrice { get; set; }
+            public int NumberOfStocks { get; set; }
+        }
+
+        private List<HoldingStockInfo> holdingStockInfos = new List<HoldingStockInfo>();
+
+        public List<HoldingStockInfo> getStock()
+        {
+            holdingStockInfos.Clear(); // 기존 리스트 초기화
             
             using (var hold_reader = dbManager.select(
                 "holding_stock h", "*", $"h.user_id='{user_id}'", "stock s", "h.std_code=s.std_code"))
             {
-                if (hold_reader == null || !hold_reader.HasRows)  // 데이터가 없는 경우 체크
+                if (hold_reader == null || !hold_reader.HasRows)
                 {
-                    return holding_stock; // 빈 리스트 반환
+                    return holdingStockInfos; // 빈 리스트 반환
                 }
-                else
+                
+                while (hold_reader.Read())
                 {
-                    while (hold_reader.Read())
+                    holdingStockInfos.Add(new HoldingStockInfo
                     {
-                        string name = Convert.ToString(hold_reader["stock_name"]);
-                        holding_stock.Add(name); // 각 std_code를 리스트에 추가
-                    }
+                        StockName = Convert.ToString(hold_reader["stock_name"]),
+                        PurchasePrice = Convert.ToInt32(hold_reader["price"]),
+                        NumberOfStocks = Convert.ToInt32(hold_reader["num_of_stocks"])
+                    });
                 }
             }
 
-            return holding_stock;
+            return holdingStockInfos;
         }
 
         public void delUser()

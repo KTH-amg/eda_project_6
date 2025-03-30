@@ -17,7 +17,7 @@ public class ScrollManager : MonoBehaviour
     private int itemsInCurrentGroup = 0;               // 현재 그룹에 들어있는 아이템 수
     private int totalItemsAdded = 0;
     private const int MAX_ITEMS_PER_GROUP = 2;         // 그룹당 최대 아이템 수
-    private List<string> holding_stock_List;
+    private List<User.HoldingStockInfo> holdingStocks;
     private List<Toggle> stockToggles = new List<Toggle>();
 
     // 각 종목의 매수가와 수량을 저장할 구조체 정의
@@ -34,12 +34,21 @@ public class ScrollManager : MonoBehaviour
     {
         if (User.Instance != null)
         {
-            holding_stock_List = User.Instance.getStock();
-            if(holding_stock_List != null)
+            holdingStocks = User.Instance.getStock();
+            if(holdingStocks != null && holdingStocks.Count > 0)
             {
-                int holding_stock_num = holding_stock_List.Count;
+                // 보유 주식 정보를 딕셔너리에 저장
+                foreach (var stockInfo in holdingStocks)
+                {
+                    stockPurchaseInfos[stockInfo.StockName] = new StockPurchaseInfo 
+                    { 
+                        PurchasePrice = stockInfo.PurchasePrice,
+                        NumberOfStocks = stockInfo.NumberOfStocks
+                    };
+                }
                 
-                for (int i = 0; i < holding_stock_num; i++)
+                // 각 주식에 대해 아이템 생성
+                for (int i = 0; i < holdingStocks.Count; i++)
                 {
                     await AddNewItem();
                 }
@@ -60,7 +69,7 @@ public class ScrollManager : MonoBehaviour
             CreateNewGroup();
         }
 
-        string stockName = holding_stock_List[totalItemsAdded];
+        string stockName = holdingStocks[totalItemsAdded].StockName;
         GameObject newView = Instantiate(viewPrefab, currentGroup.transform);
         await SetStockItemData(newView, stockName);
         
@@ -70,10 +79,9 @@ public class ScrollManager : MonoBehaviour
 
     private async Task SetStockItemData(GameObject stockItem, string stockName)
     {
-        string today = DateTime.Now.AddDays(-1).ToString("yyyyMMdd");
-        StockInfo stockInfo = new StockInfo(today, today);
+        string targetDate = await GetMostRecentTradingDay(stockName);
+        StockInfo stockInfo = new StockInfo(targetDate, targetDate);
         List<StockDetail> stock_data_arr = await stockInfo.get_stock_info(stockName);
-
 
         // 각 TMP 컴포넌트 찾기
         TextMeshProUGUI name = stockItem.transform.Find("name").GetComponent<TextMeshProUGUI>();
@@ -103,7 +111,9 @@ public class ScrollManager : MonoBehaviour
                 float currentPrice = (float)stock_data_arr[0].closing_price;
                 float purchasePrice = float.Parse(purchaseInfo.PurchasePrice.ToString());
                 float marginRate = ((currentPrice - purchasePrice) / purchasePrice) * 100;
-                margin.text = $"{marginRate:F2}%";
+                string sign = marginRate >= 0 ? "+" : "";
+                margin.text = $"{sign}{marginRate:F2}%";
+                margin.color = marginRate >= 0 ? Color.red : new Color(0, 0.7f, 1f);
             }
             
             // 필요한 경우 수량 정보도 표시
@@ -112,8 +122,15 @@ public class ScrollManager : MonoBehaviour
             //     stockAmount.text = purchaseInfo.NumberOfStocks;
         }
 
-        if (fluct != null) fluct.text = Convert.ToString(stock_data_arr[0].fluctuation_rate);
-        if (attr != null) attr.text = stock_data_arr[0].abbr; 
+        if (fluct != null) 
+        {
+            float fluctRate = stock_data_arr[0].fluctuation_rate;
+            string arrow = fluctRate >= 0 ? " ▲" : " ▼";
+            fluct.text = $"{fluctRate:F2}%{arrow}";
+            fluct.color = fluctRate >= 0 ? Color.red : new Color(0, 0.7f, 1f);
+        }
+
+        if (attr != null) attr.text = stock_data_arr[0].abbr;
 
         // Toggle 컴포넌트 찾아서 리스트에 추가
         Toggle stockToggle = stockItem.GetComponentInChildren<Toggle>();
@@ -160,17 +177,15 @@ public class ScrollManager : MonoBehaviour
         currentGroup = null;
         itemsInCurrentGroup = 0;
         totalItemsAdded = 0;
-        stockToggles.Clear();  // Toggle 리스트도 초기화
+        stockToggles.Clear();
 
         // 리스트 다시 가져오기
         if (User.Instance != null)
         {
-            holding_stock_List = User.Instance.getStock();
-            if(holding_stock_List != null)
+            holdingStocks = User.Instance.getStock();
+            if(holdingStocks != null && holdingStocks.Count > 0)
             {
-                int holding_stock_num = holding_stock_List.Count;
-                
-                for (int i = 0; i < holding_stock_num; i++)
+                for (int i = 0; i < holdingStocks.Count; i++)
                 {
                     await AddNewItem();
                 }
@@ -199,7 +214,7 @@ public class ScrollManager : MonoBehaviour
         {
             if (stockToggles[i] != null && stockToggles[i].isOn)
             {
-                selectedStocks.Add(holding_stock_List[i]);
+                selectedStocks.Add(holdingStocks[i].StockName);
             }
         }
         return selectedStocks;
@@ -208,31 +223,74 @@ public class ScrollManager : MonoBehaviour
     // 삭제 후 목록 새로고침
     public async void RefreshAfterDeletion()
     {
-        // 기존 그룹과 아이템들 제거
         foreach (Transform child in scrollRect.content)
         {
             Destroy(child.gameObject);
         }
         
-        // 변수 초기화
         currentGroup = null;
         itemsInCurrentGroup = 0;
         totalItemsAdded = 0;
         stockToggles.Clear();
 
-        // 리스트 다시 가져오기
         if (User.Instance != null)
         {
-            holding_stock_List = User.Instance.getStock();
-            if(holding_stock_List != null)
+            holdingStocks = User.Instance.getStock();
+            if(holdingStocks != null && holdingStocks.Count > 0)
             {
-                int holding_stock_num = holding_stock_List.Count;
-                
-                for (int i = 0; i < holding_stock_num; i++)
+                for (int i = 0; i < holdingStocks.Count; i++)
                 {
                     await AddNewItem();
                 }
             }
         }
+    }
+
+    private async Task<string> GetMostRecentTradingDay(string stockName)
+    {
+        DateTime currentDate = DateTime.Now;
+        int maxAttempts = 10; // 최대 10일 전까지만 확인
+        int attempts = 0;
+
+        while (attempts < maxAttempts)
+        {
+            // 주말 체크
+            if (currentDate.DayOfWeek == DayOfWeek.Saturday)
+            {
+                currentDate = currentDate.AddDays(-1);
+                attempts++;
+                continue;
+            }
+            if (currentDate.DayOfWeek == DayOfWeek.Sunday)
+            {
+                currentDate = currentDate.AddDays(-2);
+                attempts++;
+                continue;
+            }
+
+            // 해당 날짜의 데이터가 있는지 확인
+            string dateString = currentDate.ToString("yyyyMMdd");
+            try
+            {
+                StockInfo testInfo = new StockInfo(dateString, dateString);
+                List<StockDetail> testData = await testInfo.get_stock_info(stockName);
+                
+                // 데이터가 존재하면 해당 날짜 반환
+                if (testData != null && testData.Count > 0)
+                {
+                    return dateString;
+                }
+            }
+            catch
+            {
+                // 에러 발생 시 (데이터가 없는 경우) 이전 날짜 확인
+            }
+
+            currentDate = currentDate.AddDays(-1);
+            attempts++;
+        }
+
+        // 기본값으로 현재 날짜 반환 (모든 시도가 실패한 경우)
+        return DateTime.Now.ToString("yyyyMMdd");
     }
 }

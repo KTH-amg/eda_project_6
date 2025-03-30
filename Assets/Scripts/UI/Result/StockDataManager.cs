@@ -79,24 +79,67 @@ public class StockDataManager : MonoBehaviour
             }
         }
 
+        // 종목명
         GameObject.Find("stock_name_txt").GetComponent<TextMeshProUGUI>().text = stock_name;
 
-        GameObject.Find("cur_price_data").GetComponent<TextMeshProUGUI>().text = stock_data_arr[stock_data_arr.Count - 1].closing_price.ToString();
-        GameObject.Find("cur_price_cont").GetComponent<TextMeshProUGUI>().text = stock_data_arr[stock_data_arr.Count - 1].contrast.ToString();
+        // 현재가
+        GameObject.Find("cur_price_data").GetComponent<TextMeshProUGUI>().text = 
+            $"{stock_data_arr[stock_data_arr.Count - 1].closing_price:N0}원";
 
-        GameObject.Find("avg_price_data").GetComponent<TextMeshProUGUI>().text = (sum / stock_data_arr.Count).ToString();
+        // 전일대비
+        TextMeshProUGUI contrastText = GameObject.Find("cur_price_cont").GetComponent<TextMeshProUGUI>();
+        float contrast = stock_data_arr[stock_data_arr.Count - 1].contrast;
+        float currentPrice = stock_data_arr[stock_data_arr.Count - 1].closing_price;
+        float previousPrice = currentPrice - contrast;
+        float percentageChange = (contrast / previousPrice) * 100;
+        contrastText.text = $"{contrast:N0}원 ({percentageChange:F2}%)";
+        contrastText.color = contrast >= 0 ? Color.red : new Color(0, 0.7f, 1f);
 
-        GameObject.Find("max_price_data").GetComponent<TextMeshProUGUI>().text = maxPrice.ToString();
-        GameObject.Find("max_price_date").GetComponent<TextMeshProUGUI>().text = stock_data_arr[maxIndex].day;
+        // 평균가
+        GameObject.Find("avg_price_data").GetComponent<TextMeshProUGUI>().text = 
+            $"{(sum / stock_data_arr.Count):N0}원";
 
-        GameObject.Find("min_price_data").GetComponent<TextMeshProUGUI>().text = minPrice.ToString();
-        GameObject.Find("min_price_date").GetComponent<TextMeshProUGUI>().text = stock_data_arr[minIndex].day;
+        // 최고가
+        GameObject.Find("max_price_data").GetComponent<TextMeshProUGUI>().text = 
+            $"{maxPrice:N0}원";
+        GameObject.Find("max_price_date").GetComponent<TextMeshProUGUI>().text = 
+            stock_data_arr[maxIndex].day.Replace("/", "-");
 
-        GameObject.Find("fluc_rate_data").GetComponent<TextMeshProUGUI>().text = stock_data_arr[stock_data_arr.Count - 1].fluctuation_rate.ToString();
+        // 최저가
+        GameObject.Find("min_price_data").GetComponent<TextMeshProUGUI>().text = 
+            $"{minPrice:N0}원";
+        GameObject.Find("min_price_date").GetComponent<TextMeshProUGUI>().text = 
+            stock_data_arr[minIndex].day.Replace("/", "-");
 
-        GameObject.Find("total_share_data").GetComponent<TextMeshProUGUI>().text = stock_data_arr[stock_data_arr.Count - 1].num_of_sh.ToString();
+        // 등락률
+        GameObject.Find("fluc_rate_data").GetComponent<TextMeshProUGUI>().text = 
+            $"{stock_data_arr[stock_data_arr.Count - 1].fluctuation_rate:F2}%";
+
+        // 거래량
+        long totalShares = stock_data_arr[stock_data_arr.Count - 1].num_of_sh;
+        string shareText;
+        if (totalShares >= 1000000)
+        {
+            float millionShares = totalShares / 1000000f;
+            shareText = $"{millionShares:F2}M";
+        }
+        else
+        {
+            shareText = totalShares.ToString("N0");
+        }
+        GameObject.Find("total_share_data").GetComponent<TextMeshProUGUI>().text = shareText;
+
+        // 위험도
         GameObject.Find("risk_data").GetComponent<TextMeshProUGUI>().text = predict_risk.Item2;
-        GameObject.Find("pred_data").GetComponent<TextMeshProUGUI>().text = cur_pred.ToString();
-        GameObject.Find("pred_cont").GetComponent<TextMeshProUGUI>().text = (cur_pred - cur_price).ToString();
+
+        // 예측가
+        GameObject.Find("pred_data").GetComponent<TextMeshProUGUI>().text = 
+            $"{cur_pred:N0}원";
+
+        // 예측가 대비
+        TextMeshProUGUI predContText = GameObject.Find("pred_cont").GetComponent<TextMeshProUGUI>();
+        float priceDiff = cur_pred - cur_price;
+        predContText.text = $"{priceDiff:N0}원";
+        predContText.color = priceDiff >= 0 ? Color.red : new Color(0, 0.7f, 1f);
     }
 }
