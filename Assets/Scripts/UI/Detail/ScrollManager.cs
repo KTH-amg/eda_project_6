@@ -35,7 +35,23 @@ public class ScrollManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     private async void Start()
     {
-        await InitializeStockList();
+        if (User.Instance != null)
+        {
+            // 초기 데이터 로드
+            holdingStocks = User.Instance.getStock();
+            
+            // stockPurchaseInfos 딕셔너리 초기화
+            foreach (var stock in holdingStocks)
+            {
+                stockPurchaseInfos[stock.StockName] = new StockPurchaseInfo
+                {
+                    PurchasePrice = stock.PurchasePrice,
+                    NumberOfStocks = stock.NumberOfStocks
+                };
+            }
+            
+            await InitializeStockList();
+        }
     }
 
     // Update is called once per frame
@@ -147,6 +163,14 @@ public class ScrollManager : MonoBehaviour
 
     private async void HandleStockAdded(string newStock, int purchasePrice, int numOfStock)
     {
+        // 새로운 주식 정보를 딕셔너리에 추가
+        stockPurchaseInfos[newStock] = new StockPurchaseInfo
+        {
+            PurchasePrice = purchasePrice,
+            NumberOfStocks = numOfStock
+        };
+        
+        // UI 갱신
         await RefreshStockList();
     }
 
@@ -157,18 +181,30 @@ public class ScrollManager : MonoBehaviour
 
     private async Task RefreshStockList()
     {
-        // 기존 아이템 정리
-        foreach (var view in stockViews)
+        try
         {
-            if (view != null) Destroy(view.gameObject);
+            // 기존 아이템 정리
+            foreach (Transform child in scrollRect.content)
+            {
+                Destroy(child.gameObject);
+            }
+            
+            stockViews.Clear();
+            stockToggles.Clear();
+            
+            // 상태 초기화
+            currentGroup = null;
+            itemsInCurrentGroup = 0;
+            totalItemsAdded = 0;
+            
+            // 목록 다시 로드
+            holdingStocks = User.Instance.getStock();
+            await InitializeStockList();
         }
-        stockViews.Clear();
-        
-        // 컨텐츠 초기화
-        currentGroup = null;
-        itemsInCurrentGroup = 0;
-        
-        await InitializeStockList();
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to refresh stock list: {e}");
+        }
     }
     
     // 체크박스 표시/숨김 토글 메서드
@@ -269,9 +305,6 @@ public class ScrollManager : MonoBehaviour
         {
             if (User.Instance == null) return;
             
-            holdingStocks = User.Instance.getStock();
-            if(holdingStocks == null || holdingStocks.Count == 0) return;
-
             // 모든 주식 데이터를 병렬로 가져오기
             var tasks = holdingStocks.Select(async stock => {
                 var targetDate = await GetMostRecentTradingDay(stock.StockName);
