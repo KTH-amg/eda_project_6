@@ -1,12 +1,11 @@
 namespace stockinfo
 {
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-//using System.Net.Http;
+using System.Net.Http;
 using System.Text;
-//using System.Threading.Tasks;
+using System.Threading.Tasks;
 using System.Data;
 using CsvHelper;
 using CsvHelper.Configuration;
@@ -14,7 +13,6 @@ using System.Linq;
 using System.Globalization;
 using stockdetail;
 using UnityEngine;
-using UnityEngine.Networking;
 
 public class StockInfo
 {
@@ -50,7 +48,7 @@ public class StockInfo
         }
     }
     
-    public IEnumerator get_stock_info(string stock_name, Action<List<StockDetail>> onComplete)
+    public async Task<List<StockDetail>> get_stock_info(string stock_name)
     {
         // 종목 표준코드, 약식코드 검색
         string std_code = "", abbr = "";
@@ -58,7 +56,7 @@ public class StockInfo
         {
             if (stock_reader == null || !stock_reader.HasRows)  // 데이터가 없는 경우 체크
             {
-                yield break;
+                return null;
             }
             else
             {
@@ -116,7 +114,6 @@ public class StockInfo
         string url_price = "http://data.krx.co.kr/comm/fileDn/GenerateOTP/generate.cmd";
 
         // generate 페이로드의 양식 데이터
-        /*
         var data_price = new Dictionary<string, string>
         {
             { "locale", "ko_KR" },
@@ -135,67 +132,33 @@ public class StockInfo
             { "name", "fileDown" },
             { "url", "dbms/MDC/STAT/standard/MDCSTAT01701" }
         };
-        */
-        var data_price = new WWWForm();
-        data_price.AddField("locale", "ko_KR");
-        data_price.AddField("tboxisuCd_finder_stkisu0_1", $"{abbr}/{stock_name}");
-        data_price.AddField("isuCd", std_code);
-        data_price.AddField("isuCd2", "KR7005930003");
-        data_price.AddField("codeNmisuCd_finder_stkisu0_1", stock_name);
-        data_price.AddField("param1isuCd_finder_stkisu0_1", "ALL");
-        data_price.AddField("strtDd", strtDd);
-        data_price.AddField("endDd", endDd);
-        data_price.AddField("adjStkPrc_check", "Y");
-        data_price.AddField("adjStkPrc", "2");
-        data_price.AddField("share", "1");
-        data_price.AddField("money", "1");
-        data_price.AddField("csvxls_isNo", "false");
-        data_price.AddField("name", "fileDown");
-        data_price.AddField("url", "dbms/MDC/STAT/standard/MDCSTAT01701");
 
         // 브라우저에서 서버로 보내는 헤더값
-        /*
         var headers = new Dictionary<string, string>
         {
             { "Referer", "http://data.krx.co.kr/contents/MDC/MDI/mdiLoader/index.cmd?menuId=MDC0201020203" },
             { "User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" }
         };
-        */
 
-        //string indv_data;
-        //using (var client = new HttpClient())
-        using (UnityWebRequest request = UnityWebRequest.Post(url_price, data_price))
+        string indv_data;
+        using (var client = new HttpClient())
         {
-            /*
             foreach (var header in headers)
             {
                 client.DefaultRequestHeaders.Add(header.Key, header.Value);
-            }
-            */
-            request.SetRequestHeader("Referer", "http://data.krx.co.kr/contents/MDC/MDI/mdiLoader/index.cmd?menuId=MDC0201020203");
-            //request.SetRequestHeader("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36");
-            yield return request.SendWebRequest();
-
-            if (request.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError("OTP 요청 실패: " + request.error);
-                yield break;
             }
 
             // generate 부분의 헤더에서 Referer과 User-Agent를 따올 수 있음 User-Agent는 모두 동일
             // KRX의 다른 정보를 따올 때는 Referer만 바꿔주기
             // download payload(요청데이터)와 동일해야함
-            //var content_indv = new FormUrlEncodedContent(data_price);
-            //var response_indv = await client.PostAsync(url_price, content_indv);
-            var otp_indv = request.downloadHandler.text;
+            var content_indv = new FormUrlEncodedContent(data_price);
+            var response_indv = await client.PostAsync(url_price, content_indv);
+            var otp_indv = await response_indv.Content.ReadAsStringAsync();
 
             // download의 헤더 요청 URL
             string downUrl_indv = "http://data.krx.co.kr/comm/fileDn/download_csv/download.cmd";
 
             // 서버로부터 데이터 요청 후 읽어들이기
-            var downloadForm = new WWWForm();
-            downloadForm.AddField("code", otp_indv);
-            /*
             var downloadData_indv = new Dictionary<string, string>
             {
                 { "code", otp_indv }
@@ -203,60 +166,48 @@ public class StockInfo
             var downloadContent_indv = new FormUrlEncodedContent(downloadData_indv);
             var downSectorResponse_indv = await client.PostAsync(downUrl_indv, downloadContent_indv);
             var stream_indv = await downSectorResponse_indv.Content.ReadAsStreamAsync();
+
             using (var reader = new StreamReader(stream_indv, Encoding.GetEncoding("EUC-KR")))
             {
                 indv_data = reader.ReadToEnd();
             }
-            */
-            using (UnityWebRequest downloadRequest = UnityWebRequest.Post(downUrl_indv, downloadForm))
-            {
-                yield return downloadRequest.SendWebRequest();
-                
-                if (downloadRequest.result != UnityWebRequest.Result.Success)
-                {
-                    Debug.LogError("데이터 다운로드 실패: " + downloadRequest.error);
-                    yield break;
-                }
-                
-                var indv_data = Encoding.GetEncoding("EUC-KR").GetString(downloadRequest.downloadHandler.data);
-                DataTable indv_table = ConvertCsvToTable(indv_data);
+        }
 
-                // 디버깅을 위해 테이블 정보 출력
-                Debug.Log($"테이블 행 수: {indv_table.Rows.Count}");
-                foreach (DataColumn column in indv_table.Columns)
-                {
-                    Debug.Log($"열 이름: {column.ColumnName}");
-                }
+        DataTable indv_table = ConvertCsvToTable(indv_data);
+
+        // 디버깅을 위해 테이블 정보 출력
+        Debug.Log($"테이블 행 수: {indv_table.Rows.Count}");
+        foreach (DataColumn column in indv_table.Columns)
+        {
+            Debug.Log($"열 이름: {column.ColumnName}");
+        }
             
-                // 테이블의 모든 행을 리스트로 변환
-                var rows = new List<DataRow>();
-                foreach (DataRow row in indv_table.Rows)
-                {
-                    rows.Add(row);
-                }
+        // 테이블의 모든 행을 리스트로 변환
+        var rows = new List<DataRow>();
+        foreach (DataRow row in indv_table.Rows)
+        {
+            rows.Add(row);
+        }
             
-                // 리스트를 역순으로 순회
-                for (int i = rows.Count - 1; i >= 0; i--)
-                {
-                    try 
-                    {
-                        Debug.Log($"일자: {rows[i]["일자"]}, 종가: {rows[i]["종가"]}, 시가: {rows[i]["시가"]}");
-                        stock_data_arr.Add(new StockDetail(
-                            stock_name, std_code, Convert.ToString(rows[i]["일자"]), Convert.ToInt32(rows[i]["종가"]), abbr, 
-                            Convert.ToInt32(rows[i]["대비"]), Convert.ToSingle(rows[i]["등락률"]),
-                            Convert.ToInt32(rows[i]["시가"]), Convert.ToInt32(rows[i]["고가"]),
-                            Convert.ToInt32(rows[i]["저가"]), Convert.ToDouble(rows[i]["거래량"]),
-                            Convert.ToInt64(rows[i]["거래대금"]), Convert.ToInt64(rows[i]["시가총액"]),
-                            Convert.ToInt64(rows[i]["상장주식수"])));
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.LogError($"데이터 처리 중 오류 발생: {ex.Message}");
-                    }
-                }
+        // 리스트를 역순으로 순회
+        for (int i = rows.Count - 1; i >= 0; i--)
+        {
+            try 
+            {
+                stock_data_arr.Add(new StockDetail(
+                    stock_name, std_code, Convert.ToString(rows[i]["일자"]), Convert.ToInt32(rows[i]["종가"]), abbr, 
+                    Convert.ToInt32(rows[i]["대비"]), Convert.ToSingle(rows[i]["등락률"]),
+                    Convert.ToInt32(rows[i]["시가"]), Convert.ToInt32(rows[i]["고가"]),
+                    Convert.ToInt32(rows[i]["저가"]), Convert.ToDouble(rows[i]["거래량"]),
+                    Convert.ToInt64(rows[i]["거래대금"]), Convert.ToInt64(rows[i]["시가총액"]),
+                    Convert.ToInt64(rows[i]["상장주식수"])));
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"데이터 처리 중 오류 발생: {ex.Message}");
             }
         }
-        onComplete?.Invoke(stock_data_arr); // 데이터 처리 완료 후 콜백 호출
+        return stock_data_arr;
     }
     
     public void predict_stock_info(string std_code, Action<Tuple<float[], string>> callback)
