@@ -93,14 +93,10 @@ def handle_client(conn, addr):
 
         if received_string:
             # 종목 코드 추출 및 데이터 준비
-            sectors = pd.read_csv("/home/john/rnn_model/sectors.csv") # ssh에 sectors 파일 업로드
+            sectors = pd.read_csv("/home/john/rnn_model/std_name.csv") # ssh에 sectors 파일 업로드
 
-            std = []
-            name = []
-
-            for i in range(len(sectors)):
-                std.append(sectors.iloc[i, 1])
-                name.append(sectors.iloc[i, 4])
+            name_df = sectors[sectors["std"] == f"{received_string}"]
+            name = name_df.iloc[0, 2]
 
 
             aws = mysql.connector.connect(
@@ -113,7 +109,7 @@ def handle_client(conn, addr):
         
             cur = aws.cursor(buffered=True)
             
-            sql = f"select closing_price from stock_price_per_date where std_code = '{std[i]}'"
+            sql = f"select closing_price from stock_price_per_date where std_code = '{received_string}'"
             cur.execute(sql)
 
             result = cur.fetchall()
