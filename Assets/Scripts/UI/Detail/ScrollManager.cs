@@ -248,7 +248,7 @@ public class ScrollManager : MonoBehaviour
         totalItemsAdded = 0;
         stockToggles.Clear();
 
-        await InitializeStockList();
+        await RefreshStockList();
     }
 
     private async Task<string> GetMostRecentTradingDay(string stockName)
