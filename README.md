@@ -4,8 +4,8 @@
 ![intro_image](https://github.com/user-attachments/assets/6b98b5ec-f2a2-4fef-8996-a3065e7e90e4)
 
 ## 1. 제작 배경
-국장의 미래는 어두운가?밝은가? -> <b>분석을 통해 국장의 미래를 예측해보면 어떨까?</b>  
-실시간 주식 데이터를 <b>수집 및 분석</b> -> (딥러닝 기반 예측 모델 활용)<b>향후 주가 예측치 산출</b> -> (Unity 이용) GUI 서비스로 <b>누구나 이용 가능!</b>
+- 어떤 사람은 국장의 미래를 낙관적으로 보고, 어떤 사람은 비관적으로 본다
+- 국장의 미래를 파악해보기 위해 예측 모델을 사용하여 각 종목의 주가를 예측해보고자 한다
 
 ## 2. 팀원 소개
 ![team_image](https://github.com/user-attachments/assets/1bcc9091-9fc1-45dd-9f69-7cc687f156c0)
@@ -27,8 +27,11 @@
 
 ## 4. 사용 모델 및 서빙 방식
 - RNN 기반의 주가 예측 모델을 활용, 지난 주가 데이터를 기반으로 향후 30일치 예측치 산출
+![rnn_image](https://github.com/user-attachments/assets/29bb2edc-4b2b-46ce-83a2-73dcc26d42d0)
+
 - 모델의 효율적인 사용을 위해 별도의 서버 운용, 서버에서 모델을 돌리고 예측치를 서비스에 전송
+![server_image](https://github.com/user-attachments/assets/e0c3ac45-3a7f-4178-81e0-0db5dfed79e4)
 
 ## 5. 서비스 운영 계획
-- 서버 운영 기간(예상):
-- DB 운영 기간(예상): 
+- 서버 운영 기간(예상): ~2025/06/25
+- DB 운영 기간(예상): ~2025/06/25
