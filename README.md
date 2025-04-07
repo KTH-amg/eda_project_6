@@ -13,6 +13,8 @@
 ## 3. 서비스 유형
 ### 3.1 보유 종목 정보 조회
 ![info_image](https://github.com/user-attachments/assets/01754d4c-73e0-42ae-b393-0c7a27a99338)
+
+https://github.com/user-attachments/assets/9f0c9e66-f191-4c06-b0c4-78efe71e3491
 - 본인이 소유한 종목 추가 및 삭제 가능
 - 본인이 소유한 종목의 정보(종목명, 현재가, 매수가, 수익률) 조회
 
@@ -21,6 +23,8 @@
   <img src="https://github.com/user-attachments/assets/13ad1195-8ffe-40c3-8592-1e8fed55d5b3" align="center" width="49%">  
   <img src="https://github.com/user-attachments/assets/95ff8557-dd54-4155-ae58-f6e24bb63a92" align="center" width="49%">
 </p>
+
+https://github.com/user-attachments/assets/71178f32-a5ea-4089-973e-ece8e6521460
 
 - 본인이 원하는 종목 검색 -> 지난 30일치 데이터, 향후 30일치 예측치 조회
 - 현재 정보(현재가, 기간내 최고,최저가 등)과 30일 뒤 예측가, 리스크 지수 조회
