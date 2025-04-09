@@ -58,7 +58,7 @@ aws = mysql.connector.connect(
         host = "database-1.c3ykuqosgy9m.ap-northeast-2.rds.amazonaws.com",
         port = 3306,
         user = "root",
-        password = "kim4582345",
+        password = "****",
         database = "joseon_ameba"
         )
     
